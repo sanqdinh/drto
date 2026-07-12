@@ -48,6 +48,29 @@ A verified landscape review (2026-07-11) found:
 The three-mode comparison on one problem (disturbance rejection with
 visible solve delay) is the package's own killer demo.
 
+## Problem-class scope (decided 2026-07-12)
+
+- Scope 1: NLP. Solved in-process with pounce; all three modes.
+- Scope 2: MILP. Same overall loop architecture (declare, shift,
+  inject measurement, solve, apply) with different system functions
+  underneath: any Pyomo MILP solver (HiGHS, Gurobi, CP-SAT via
+  pyomo-cp) instead of the pounce session. The sensitivity machinery
+  does not apply to MILP, so scope 2 gets modes 1 and 2 only; mode 3
+  is NLP-only. This is understood and accepted.
+- Architectural commitments this imposes NOW: the loop is
+  solver-pluggable, and the held-KKT session is an optional attachment
+  to the loop, not its spine.
+- The MILP scope is the economic-dispatch and scheduling use case
+  (rolling re-solves with commitment decisions, the rolling-intrinsic
+  pattern), which is also where the package meets power-market
+  dispatch problems.
+- Beyond scope 2, noted as future patterns only: MINLP mode 3 via
+  fix-the-integers-and-differentiate on the continuous subproblem
+  (integer-solution change = fall back to the background solve, the
+  same fallback philosophy as the active-set warning), and Sager-style
+  relax-and-round for integer controls, which would live beside
+  pyomo-cvp's profiles as a transformation, not inside the loop.
+
 ## Dependency stack
 
 - pyomo + pyomo.dae for modeling and discretization.
