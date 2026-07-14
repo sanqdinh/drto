@@ -434,8 +434,8 @@ PSD-guaranteed choice for arrival costs.
   the `declare_measurement` component/representation, and whether
   `declare_disturbance` reuses the `declare_control` machinery since both
   are free time-varying Vars.
-- Economic terminal cost: not added for now (no
-  `declare_economic_terminal_cost`). Economic NMPC can carry one, but that
-  is out of v1 scope; revisit if economic NMPC enters scope.
+- Economic terminal cost: RESOLVED 2026-07-14, no separate
+  `declare_economic_terminal_cost`. Economic NMPC can carry one in the
+  literature, but drto will not add the declaration.
 - `declare_control` vs `declare_profile`: RESOLVED 2026-07-14. The
   `profile` flag on `declare_control` calls cvp's `declare_profile`.
