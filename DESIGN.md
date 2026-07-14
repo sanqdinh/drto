@@ -14,6 +14,51 @@ advanced-step update is an acceleration mode of the loop, not a separate
 controller, so the package serves plain-NMPC users who never touch
 sensitivities and differentiates on the mode nobody else has.
 
+## The mode framework (six modes)
+
+drto is one framework over one declared model, run in any of six modes:
+the 2x3 grid of {steady-state, dynamic} by {simulation, optimization,
+estimation}. The mode fixes what is free and what the objective is; the
+model and (mostly) the declarations are shared.
+
+|  | Simulation | Optimization | Estimation |
+| --- | --- | --- | --- |
+| Steady-state | solve f(z,u)=0 for z at fixed u | economic RTO: optimize phi(z_ss, u_ss) | data reconciliation: fit z to steady data |
+| Dynamic | integrate the ODE forward (IVP) | NMPC / D-RTO over the horizon | moving horizon estimation (MHE) |
+
+- Columns are what the mode does with the degrees of freedom. Simulation
+  frees nothing and solves the square model. Optimization frees the
+  controls and adds a cost. Estimation frees the states (and parameters)
+  and fits them to measurements.
+- Rows are the time treatment. Steady-state collapses the model to one
+  point with every dz/dt = 0. Dynamic keeps the horizon and the
+  discretized dynamics.
+- The optimization and estimation columns are duals: one frees inputs to
+  minimize a cost, the other frees states to fit data. MHE is the dual of
+  NMPC, and steady-state reconciliation the dual of RTO. This is why one
+  declaration surface can cover both halves; the seams are the initial
+  anchor (a hard condition for control, a soft arrival cost for
+  estimation) and the measurement.
+
+The six declarations below are the dynamic-optimization cell's surface;
+the other cells reuse the same model with pieces dropped (no cost for
+simulation) or added (arrival cost and measurement for estimation).
+Steady-state reuse is the reusable-object mechanism under "Steady-state
+reduction."
+
+On the roadmap this splits cleanly: the optimization column is the
+near-term half (dynamic NMPC/D-RTO plus steady-state RTO via the
+reduction), the estimation column is the follow-on half (MHE and its
+steady-state dual, data reconciliation), and simulation is largely free in
+either row once the model is in place (drop the cost, then solve or
+integrate).
+
+Orthogonal to this grid is the online-execution axis (ideal, real-time,
+advanced-step), documented below under "Execution variants": those are how
+the dynamic-optimization loop runs against a live plant, not additional modes.
+The "mode 1/2/3" numbering used elsewhere in this document refers to that
+execution axis.
+
 ## Why the niche is open
 
 A verified landscape review (2026-07-11) found:
@@ -34,7 +79,12 @@ A verified landscape review (2026-07-11) found:
   pounce) is actively maintained, which addresses the one structural risk
   the review identified.
 
-## The three modes (one loop)
+## Execution variants: ideal, real-time, advanced-step
+
+These three are the online-execution axis of dynamic optimization (how the
+one loop runs against a live plant when the solve takes real time),
+orthogonal to the six-mode grid above, not additional modes. The "mode
+1/2/3" numbering elsewhere in this document refers to these.
 
 1. Ideal NMPC: solve at the measurement, apply as if the solve were
    instantaneous. The simulation-study mode.

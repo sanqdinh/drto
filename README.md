@@ -1,16 +1,39 @@
 # drto
 
-Dynamic real-time optimization: receding-horizon NMPC for Pyomo models,
-with advanced-step NMPC as the headline capability and moving horizon
-estimation as the planned follow-on.
+Dynamic real-time optimization: receding-horizon optimization and
+estimation for Pyomo models, with advanced-step NMPC as the headline
+capability and moving horizon estimation as the planned follow-on.
 
-## The framework
+## The six modes
 
-drto is declaration-first. You write your dynamic model once as an
-ordinary `pyomo.dae` model, then declare the pieces that turn it into a
-receding-horizon control problem; drto assembles the horizon problem and
-runs the loop. Those pieces are the six object types of an optimal
-control problem:
+drto runs one declared model in any of six modes, the 2x3 grid of
+{steady-state, dynamic} by {simulation, optimization, estimation}. You
+write the model once; the mode fixes what is free and what the objective
+is.
+
+|  | Simulation | Optimization | Estimation |
+| --- | --- | --- | --- |
+| **Steady-state** | solve the model at equilibrium | economic RTO | data reconciliation |
+| **Dynamic** | integrate the model forward | NMPC / D-RTO | moving horizon estimation |
+
+Down the columns: simulation frees nothing and solves the model as given;
+optimization frees the controls and adds a cost; estimation frees the
+states and fits them to measurements. Across the rows: steady-state
+collapses the model to a single equilibrium point, dynamic keeps the time
+horizon. The optimization and estimation columns are duals (NMPC with MHE,
+RTO with reconciliation), so one declaration surface serves both.
+
+The near-term focus is the optimization column: dynamic NMPC/D-RTO, whose
+ideal, real-time, and advanced-step execution variants are the headline,
+plus steady-state RTO. Estimation is the planned follow-on.
+
+## Declaring a control problem
+
+drto is declaration-first. You write your dynamic model as an ordinary
+`pyomo.dae` model, then declare the pieces that turn it into a
+receding-horizon control problem (the dynamic-optimization mode); drto
+assembles the horizon problem and runs the loop. Those pieces are the six
+object types of an optimal control problem:
 
 | Object type | Declaration | What it is |
 | --- | --- | --- |
@@ -28,10 +51,9 @@ own upper and lower bounds.
 
 The vocabulary is the optimal-control literature's own (stage cost,
 terminal cost, terminal constraint), so a model reads the way the theory
-does, and the same six declarations describe every control-side mode:
-ideal, real-time, and advanced-step NMPC, plus economic D-RTO. Moving
-horizon estimation, the estimation half, adds its own pieces (a
-measurement and a soft arrival cost) and is the planned follow-on.
+does. The other modes reuse the same model: simulation drops the cost, and
+estimation swaps the initial condition for a soft arrival cost and adds a
+measurement.
 
 ## Status
 
