@@ -35,14 +35,14 @@ receding-horizon control problem (the dynamic-optimization mode); drto
 assembles the horizon problem and runs the loop. Those pieces are the six
 object types of an optimal control problem:
 
-| Object type | Declaration | What it is |
-| --- | --- | --- |
-| State | `declare_state(m.z, ...)` | A differential state. drto reads its dynamics from the state's `DerivativeVar`. |
-| Control | `declare_control(m.u, ..., wrt=m.t, profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp. |
-| Stage cost | `declare_stage_cost(expr)` | The running cost, summed over the horizon. |
-| Terminal cost | `declare_terminal_cost(expr)` | The cost on the state at the end of the horizon. |
-| Initial condition | `declare_initial_condition(...)` | The initial-state anchor, the measurement feedback in NMPC. |
-| Terminal constraint | `declare_terminal_constraint(...)` | The terminal set or region the final state must lie in. |
+| DRTO object type | Pyomo object type | Declaration | What it is |
+| --- | --- | --- | --- |
+| State | Variable | `declare_state(m.z, ...)` | A differential state. drto reads its dynamics from the state's `DerivativeVar`. |
+| Control | Variable | `declare_control(m.u, ..., wrt=m.t, profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp. |
+| Stage cost | Constraint | `declare_stage_cost(expr)` | The running cost, summed over the horizon. |
+| Terminal cost | Constraint | `declare_terminal_cost(expr)` | The cost on the state at the end of the horizon. |
+| Initial condition | Constraint | `declare_initial_condition(...)` | The initial-state anchor, the measurement feedback in NMPC. |
+| Terminal constraint | Constraint | `declare_terminal_constraint(...)` | The terminal set or region the final state must lie in. |
 
 Two things you never declare, because they already live in the model: the
 **dynamics** are read from the `pyomo.dae` `DerivativeVar`s of the
