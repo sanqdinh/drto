@@ -318,10 +318,12 @@ estimation objective from the live cost-term Vars):
 - `declare_estimated_parameter(m.theta, ...)`: tags the Vars for unknown
   model parameters to estimate, constant over the window. Shared with the
   steady-state data-reconciliation mode.
-- `declare_disturbance(m.w, ...)`: tags the process-noise / disturbance
-  Vars, the free time-varying degree of freedom that lets the trajectory
-  bend to fit the data (dz/dt = f + w). The estimation dual of
-  `declare_control` (the free time-varying input).
+- `declare_disturbance(m.w, ...)`: tags the process-noise Vars w in
+  dz/dt = f + w, the free variables the estimator adjusts to reconcile the
+  model with the data, penalized by their inverse covariance in the
+  estimation stage cost. It is noise, not a manipulated input: unrelated to
+  `declare_control`, with no profile parameterization (USER DECISION
+  2026-07-14).
 - `declare_measurement(...)`: tags the measured-output map y = h(z) and
   carries the measurement data hook, the measured values as a mutable Param
   stream drto updates over the window each step. The estimation dual of the
@@ -431,9 +433,7 @@ PSD-guaranteed choice for arrival costs.
   which time point) and whether a thin layer wraps the updates.
 - MHE surface designed 2026-07-14 (estimation declarations above);
   implementation still deferred to the follow-on. Open estimation detail:
-  the `declare_measurement` component/representation, and whether
-  `declare_disturbance` reuses the `declare_control` machinery since both
-  are free time-varying Vars.
+  the `declare_measurement` component/representation.
 - Economic terminal cost: RESOLVED 2026-07-14, no separate
   `declare_economic_terminal_cost`. Economic NMPC can carry one in the
   literature, but drto will not add the declaration.
