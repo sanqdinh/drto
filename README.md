@@ -1,5 +1,10 @@
 # drto
 
+[![PyPI](https://img.shields.io/pypi/v/drto.svg)](https://pypi.org/project/drto/)
+[![Python versions](https://img.shields.io/pypi/pyversions/drto.svg)](https://pypi.org/project/drto/)
+[![CI](https://github.com/devin-griff/drto/actions/workflows/ci.yml/badge.svg)](https://github.com/devin-griff/drto/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](LICENSE)
+
 Dynamic real-time optimization: receding-horizon optimization and
 estimation for Pyomo models, with advanced-step NMPC as the headline
 capability and moving horizon estimation as the planned follow-on.
