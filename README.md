@@ -65,8 +65,30 @@ own upper and lower bounds.
 The vocabulary is the optimal-control literature's own (stage cost,
 terminal cost, terminal constraint), so a model reads the way the theory
 does. The other modes reuse the same model: simulation drops the cost, and
-estimation swaps the initial condition for a soft arrival cost and adds its
-own pieces (a measurement, disturbances, and estimation cost terms).
+estimation swaps the initial condition for a soft arrival cost and adds the
+estimation pieces below.
+
+## Declaring an estimation problem
+
+Estimation is the dual half (moving horizon estimation, the planned
+follow-on), and it declares its own pieces the same way. MHE fits the model
+to a moving window of measurements, so the free variables and the objective
+terms differ, but the conventions carry over: each declaration tags a Var,
+a Constraint, or a Param, and drto assembles the estimation objective from
+the live cost terms.
+
+| DRTO object type | Pyomo object type | Declaration | What it is |
+| --- | --- | --- | --- |
+| Estimated parameter | Variable | `declare_estimated_parameter(m.theta, ...)` | Unknown model parameters to estimate, constant over the window. Shared with steady-state data reconciliation. |
+| Disturbance | Variable | `declare_disturbance(m.w, ...)` | Process-noise variables (`dz/dt = f + w`) the estimator adjusts to fit the data, penalized by their covariance. |
+| Measurement | Parameter | `declare_measurement(m.y_meas, ...)` | The measured values in the estimation cost residuals; a mutable Param drto refreshes each step. |
+| Estimation stage cost | Constraint | `declare_estimation_stage_cost(m.est_stage_con)` | Equality defining the running estimation cost: measurement residual plus process-noise penalty over the window. |
+| Estimation terminal cost | Constraint | `declare_estimation_terminal_cost(m.est_terminal_con)` | Equality for the current-time measurement residual (no process noise leads out of the last point). |
+| Arrival cost | Constraint | `declare_arrival_cost(m.arrival_con)` | Equality for the soft prior on the window's initial state; its weight is updated by covariance propagation. |
+
+The arrival cost is the soft dual of the control side's initial condition,
+and the estimation stage and terminal costs are the measurement-fitting
+counterparts of the tracking costs.
 
 ## Status
 
