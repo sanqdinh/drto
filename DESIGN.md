@@ -63,7 +63,7 @@ execution axis.
 
 A verified landscape review (2026-07-11) found:
 
-- IDAES Caprese ships but is frozen (no substantive commit since 2024,
+- Caprese ships but is frozen (no substantive commit since 2024,
   not a regular importable package on current main), does re-solve-per-step
   NMPC only, and its advertised MHE never existed.
 - pyomo.contrib.mpc (Parker, in Pyomo core, maintained) is deliberately
@@ -390,12 +390,9 @@ the eventual upgrade path.
    out.
 2. v1 package: the loop, three modes, declarations, tests, docs,
    executed notebooks, per the pounce-repo definition-of-done style.
-3. Stretch example (credibility tier, not a v1 gate): one dynamic IDAES
-   flowsheet. Candidates to verify against IDAES 2.12 when budget
-   allows: Caprese's moving-bed chemical-looping reactor (the
-   succession story), the subcritical boiler dynamic flowsheet
-   (industrial load-following; connects to power-price-aware operation),
-   Parker's gas-pipeline NMPC network.
+3. Stretch example (credibility tier, not a v1 gate): one large-scale
+   dynamic flowsheet, to show drto scales past the quad tank. The model is
+   deferred; pick it when budget allows.
 
 ## Follow-on
 

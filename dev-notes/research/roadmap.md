@@ -22,4 +22,4 @@ sequence.
 
 ## Stretch
 
-- One dynamic IDAES flowsheet as a credibility example.
+- One large-scale dynamic flowsheet as a credibility example.

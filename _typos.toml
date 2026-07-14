@@ -7,5 +7,4 @@ extend-exclude = ["*.ipynb"]
 
 [default.extend-words]
 # Domain terms, not misspellings.
-RTO = "RTO"      # real-time optimization
-IDAES = "IDAES"  # the IDAES process-systems framework
+RTO = "RTO"  # real-time optimization
