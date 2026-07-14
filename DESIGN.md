@@ -324,12 +324,12 @@ estimation objective from the live cost-term Vars):
   estimation stage cost. It is noise, not a manipulated input: unrelated to
   `declare_control`, with no profile parameterization (USER DECISION
   2026-07-14).
-- `declare_measurement(...)`: tags the measured-output map y = h(z) and
-  carries the measurement data hook, the measured values as a mutable Param
-  stream drto updates over the window each step. The estimation dual of the
-  initial-condition feedback hook. Open detail: which component it tags (the
-  output-defining constraint or the measured-output Var) and where the
-  y_meas Param sits.
+- `declare_measurement(m.y_meas, ...)`: tags the measurement Param(s), the
+  measured values y_meas that appear in the estimation cost residuals
+  (||y_meas - h(z)||). Like the z_hat feedback hook, it is a mutable Param
+  drto refreshes each step, here the incoming measurements over the window.
+  Nothing else to tag: h(z) is written inline in the cost, so there is no
+  output Var or defining constraint (USER DECISION 2026-07-14).
 - `declare_estimation_stage_cost(m.est_stage_con)`: tags the equality
   Constraint for the running estimation cost over the window, the
   measurement residual ||y_meas - h(z)|| plus the process-noise penalty
@@ -431,9 +431,12 @@ PSD-guaranteed choice for arrival costs.
   constraints, the measurements in `declare_measurement`. Remaining detail:
   the measurement Param's window bookkeeping (which measurement maps to
   which time point) and whether a thin layer wraps the updates.
-- MHE surface designed 2026-07-14 (estimation declarations above);
-  implementation still deferred to the follow-on. Open estimation detail:
-  the `declare_measurement` component/representation.
+- MHE surface settled 2026-07-14 (estimation declarations above);
+  implementation deferred to the follow-on. `declare_measurement` tags a
+  mutable Param (the measured values in the estimation costs); the only
+  remaining bit is the mundane window-shift bookkeeping of that Param as
+  the horizon advances, shared with the rest of the moving-horizon
+  plumbing.
 - Economic terminal cost: RESOLVED 2026-07-14, no separate
   `declare_economic_terminal_cost`. Economic NMPC can carry one in the
   literature, but drto will not add the declaration.
