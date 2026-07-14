@@ -199,9 +199,9 @@ need.
 Each declaration tags a Pyomo component the user already wrote, a Var or a
 Constraint (USER DECISION 2026-07-14): the point is to bolt onto an
 existing pyomo.dae model, not to introduce a new modeling framework. State
-and control tag Vars; the four cost and boundary declarations tag
-Constraints. The control-scope declaration surface (estimation-side
-declarations deferred with the MHE half):
+and control tag Vars; the cost and boundary declarations tag Constraints.
+The control-scope declaration surface (the estimation-side surface follows
+below):
 
 - `declare_state(m.z1, m.z2, ...)`: tags the differential-state Vars. Varargs,
   indexed-container-aware (one call declares all members). drto then picks
@@ -216,16 +216,29 @@ declarations deferred with the MHE half):
   `declare_profile` automatically (USER DECISION 2026-07-14). One call
   declares the control and its parameterization; cvp stays the dependency
   that implements the parameterization underneath.
-- `declare_stage_cost(m.stage_cost_con)`: tags the equality Constraint
-  that defines the running (Lagrange) cost. Its LHS is a lone scalar Var,
-  the stage-cost term; drto adds that Var to the objective it assembles.
-  The RHS is however the user expressed the accumulated cost (an explicit
+- `declare_tracking_stage_cost(m.tracking_stage_con)`: tags the equality
+  Constraint defining the setpoint-tracking running cost (the
+  ||z - z_sp|| + ||u - u_sp|| regulation penalty). LHS a lone scalar Var;
+  drto adds it to the objective it assembles. The tracking setpoint lives
+  here: the z_sp/u_sp it references are mutable Params drto updates when
+  the setpoint changes, which is where the tracking-setpoint hook resolves.
+  The RHS is however the user expressed the accumulated cost (a
   finite-element sum, a pyomo.dae Integral, an accumulator's terminal
   value): drto does not care as long as it resolves to the LHS scalar.
-- `declare_terminal_cost(m.terminal_cost_con)`: tags the equality
-  Constraint that defines the terminal (Mayer) cost V_f(z(tN)). Same
-  LHS-scalar convention; drto adds the terminal-cost Var to the objective.
-  This is the term dropped in steady-state (see the objective note below).
+- `declare_economic_stage_cost(m.economic_stage_con)`: tags the equality
+  Constraint defining the economic running cost phi(z, u). Same LHS-scalar
+  convention. This is the same economic objective the steady-state RTO
+  mode optimizes at its single point, so one declaration serves economic
+  NMPC and RTO both (economic NMPC itself is post-v1; RTO uses it in v1).
+  USER DECISION 2026-07-14: split the running cost into tracking and
+  economic terms so a mode selects which is live.
+- `declare_tracking_terminal_cost(m.tracking_terminal_con)`: tags the
+  equality Constraint defining the terminal (Mayer) tracking cost
+  V_f(z(tN)), the terminal regulation penalty. Same LHS-scalar convention;
+  drto adds the terminal-cost Var to the objective. Dropped in
+  steady-state (see the objective note below). Renamed from
+  `declare_terminal_cost` for clarity against the economic term (USER
+  DECISION 2026-07-14).
 - `declare_initial_condition(m.init_con)`: tags the equality Constraint
   anchoring the initial state, LHS the anchored state at t0. If the RHS is
   a mutable Param, that Param is the feedback-injection point drto updates
@@ -282,10 +295,12 @@ Not declared, by design:
   bounds, which drto reads off the model (USER DECISION 2026-07-14). Not
   a separate declaration.
 
-Still open (see Open questions): the tracking setpoint and later the
-measurements. The state anchor z_hat is now decided: the mutable Param on
-the RHS of the initial-condition constraint, updated each step. Dynamics
-source is decided too: picked up from each state's DerivativeVar, above.
+Moving-horizon data hooks now have homes: the state anchor z_hat is the
+mutable Param on the RHS of the initial-condition constraint; the tracking
+setpoint z_sp/u_sp are mutable Params in the tracking-cost constraints; the
+measurements are the mutable Param stream in `declare_measurement` below.
+Each is updated each step. Dynamics source is decided too: picked up from
+each state's DerivativeVar, above.
 
 Shared conventions:
 
@@ -293,6 +308,42 @@ Shared conventions:
   declared/explicit duality established in pyomo-cvp and pyomo-pounce).
 - Family conventions locked in pounce#203: varargs on every declaration,
   keyword options (e.g. `group=`) apply to every component in the call.
+
+Estimation-side surface (USER DECISION 2026-07-14; surface designed now,
+built with the MHE follow-on). MHE is the dual of the control problem, so
+the same conventions hold (each tags a Var or a Constraint; cost
+constraints are equalities with the scalar on the LHS; drto assembles the
+estimation objective from the live cost-term Vars):
+
+- `declare_estimated_parameter(m.theta, ...)`: tags the Vars for unknown
+  model parameters to estimate, constant over the window. Shared with the
+  steady-state data-reconciliation mode.
+- `declare_disturbance(m.w, ...)`: tags the process-noise / disturbance
+  Vars, the free time-varying degree of freedom that lets the trajectory
+  bend to fit the data (dz/dt = f + w). The estimation dual of
+  `declare_control` (the free time-varying input).
+- `declare_measurement(...)`: tags the measured-output map y = h(z) and
+  carries the measurement data hook, the measured values as a mutable Param
+  stream drto updates over the window each step. The estimation dual of the
+  initial-condition feedback hook. Open detail: which component it tags (the
+  output-defining constraint or the measured-output Var) and where the
+  y_meas Param sits.
+- `declare_estimation_stage_cost(m.est_stage_con)`: tags the equality
+  Constraint for the running estimation cost over the window, the
+  measurement residual ||y_meas - h(z)|| plus the process-noise penalty
+  ||w||, weighted by inverse covariances. LHS-scalar convention.
+- `declare_estimation_terminal_cost(m.est_terminal_con)`: tags the equality
+  Constraint for the current-time (window-present) term, the current-state
+  measurement residual ||y_meas(tN) - h(z(tN))|| with no process noise
+  (nothing leads out of the last point), which is why it is a distinct
+  terminal term rather than part of the stage sum. This IS a standard MHE
+  term (USER correction 2026-07-14).
+- `declare_arrival_cost(m.arrival_con)`: tags the equality Constraint for
+  the soft prior on the window's initial state, ||z(t0) - z_prior||
+  weighted by the arrival-cost inverse covariance. The dual of the
+  control-side initial condition, but SOFT (a cost, not a hard equality).
+  Its weight is the piece the covariance propagation updates each step
+  (Gauss-Newton, the pounce#203 machinery in Follow-on).
 
 ## Ground-up core; what to reuse
 
@@ -372,12 +423,19 @@ PSD-guaranteed choice for arrival costs.
   chosen to avoid DerivativeVar surgery, so how the two square (one
   reusable rule feeding both, versus picking up DerivativeVars for the
   loop and reducing to steady state separately) still needs settling.
-- Moving-horizon data: the state anchor z_hat is RESOLVED 2026-07-14 (the
-  mutable Param on the RHS of the declared initial-condition constraint,
-  which drto updates each step). Still open: how the tracking setpoint and
-  later the measurements are supplied and updated each solve. A thin layer
-  over the declarations is the leaning, not settled.
-- (MHE, deferred) the measurement notion and the soft arrival cost noted
-  under `declare_initial_condition`.
+- Moving-horizon data: RESOLVED 2026-07-14. Each hook is a mutable Param in
+  the relevant declared constraint, updated each step: z_hat on the
+  initial-condition RHS, the setpoint z_sp/u_sp in the tracking-cost
+  constraints, the measurements in `declare_measurement`. Remaining detail:
+  the measurement Param's window bookkeeping (which measurement maps to
+  which time point) and whether a thin layer wraps the updates.
+- MHE surface designed 2026-07-14 (estimation declarations above);
+  implementation still deferred to the follow-on. Open estimation detail:
+  the `declare_measurement` component/representation, and whether
+  `declare_disturbance` reuses the `declare_control` machinery since both
+  are free time-varying Vars.
+- Economic terminal cost: not added for now (no
+  `declare_economic_terminal_cost`). Economic NMPC can carry one, but that
+  is out of v1 scope; revisit if economic NMPC enters scope.
 - `declare_control` vs `declare_profile`: RESOLVED 2026-07-14. The
   `profile` flag on `declare_control` calls cvp's `declare_profile`.
