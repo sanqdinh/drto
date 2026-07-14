@@ -118,8 +118,10 @@ estimation-side surface follows below):
 - `declare_continuous_dynamics(m.ode_con)`: tags the equality Constraint of
   a continuous-time ODE. Its LHS is the DerivativeVar of a state (dz/dt),
   read via `con.expr.args[0]`; drto gets the state from the DerivativeVar
-  (`get_state_var`) and checks it is taken with respect to the declared time
-  set (verified against Pyomo 6.10). USER DECISION 2026-07-14.
+  (`get_state_var`) and checks it is a declared state and is taken with
+  respect to the declared time set (verified against Pyomo 6.10). That check
+  is why `declare_state` earns its place even though the dynamics carry the
+  DerivativeVar. USER DECISION 2026-07-14.
 - `declare_discrete_dynamics(m.diff_con)`: tags the equality Constraint of a
   discrete-time difference equation. Its LHS is a state at the next time
   point (z[k+1]), read the same way; drto gets the state (a plain Var, which
@@ -134,21 +136,24 @@ estimation-side surface follows below):
   automatically. One call declares the control and its parameterization; cvp
   stays the dependency that implements it underneath.
 - `declare_tracking_stage_cost(m.tracking_stage_con)`: tags the equality
-  Constraint defining the setpoint-tracking running cost (the
-  ||z - z_ss|| + ||u - u_ss|| regulation penalty). LHS a lone scalar Var;
-  drto adds it to the objective it assembles. The tracking targets are the
-  declared steady-state Params (`declare_steady_state` /
+  Constraint defining the setpoint-tracking running cost per time point (the
+  ||z - z_ss|| + ||u - u_ss|| regulation penalty). It is indexed over time:
+  the LHS is a scalar cost Var at each time point (L[t]), the RHS is the
+  per-point cost definition, and drto sums L[t] over time in the objective
+  it assembles (USER DECISION 2026-07-14, revising the earlier accumulated
+  scalar form; the per-point form is what lets the steady-state reduction
+  drop the time index to leave the single-point cost). The tracking targets
+  are the declared steady-state Params (`declare_steady_state` /
   `declare_steady_state_control` below), populated by the steady-state/RTO
-  solve. The RHS is however the user expressed the accumulated cost (a
-  finite-element sum, a pyomo.dae Integral, an accumulator's terminal
-  value): drto does not care as long as it resolves to the LHS scalar.
+  solve.
 - `declare_economic_stage_cost(m.economic_stage_con)`: tags the equality
-  Constraint defining the economic running cost phi(z, u). Same LHS-scalar
-  convention. This is the same economic objective the steady-state RTO
-  mode optimizes at its single point, so one declaration serves economic
-  NMPC and RTO both (economic NMPC itself is post-v1; RTO uses it in v1).
-  USER DECISION 2026-07-14: split the running cost into tracking and
-  economic terms so a mode selects which is live.
+  Constraint defining the economic running cost phi(z, u), same per-point
+  time-indexed form as the tracking stage cost. Its single-point
+  steady-state form is the economic-RTO objective; the tracking stage cost
+  is not (that is a deviation penalty, zero at the equilibrium). So one
+  declaration serves economic NMPC and RTO both (economic NMPC is post-v1;
+  RTO uses it in v1). USER DECISION 2026-07-14: split the running cost into
+  tracking and economic terms so a mode selects which is live.
 - `declare_tracking_terminal_cost(m.tracking_terminal_con)`: tags the
   equality Constraint defining the terminal (Mayer) tracking cost
   V_f(z(tN)), the terminal regulation penalty. Same LHS-scalar convention;
@@ -196,10 +201,11 @@ against Pyomo 6.10):
   objective; for the initial condition it is the anchored state at t0.
 
 The objective is drto's, not the user's: it assembles `min` over the
-declared cost-term Vars that are live in the current mode. Modes add or
-drop terms by including or excluding a cost's (Var, defining constraint)
-pair; in steady-state the reduced model never instantiates the terminal
-cost, so that term is simply absent, nothing to zero-weight. This is the
+declared cost-term Vars that are live in the current mode, summing a stage
+cost's per-point Vars over time and adding a terminal cost's single Var.
+Modes add or drop terms by including or excluding a cost's (Var, defining
+constraint) pair; in steady-state the reduced model has one time point to
+sum and never instantiates the terminal cost, so that term is simply absent. This is the
 practical payoff of representing each cost as a Var defined by a
 constraint rather than a bare expression: the pair is one handle drto can
 find and drop.

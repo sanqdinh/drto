@@ -49,8 +49,8 @@ mode):
 | Continuous dynamics | Constraint | `declare_continuous_dynamics(m.ode_con)` | Equality ODE; its left-hand side is the state's DerivativeVar (dz/dt). |
 | Discrete dynamics | Constraint | `declare_discrete_dynamics(m.diff_con)` | Equality difference equation; its left-hand side is the state at the next time point (z[k+1]). |
 | Control | Variable | `declare_control(m.u, ..., profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp, over the declared time set. |
-| Tracking stage cost | Constraint | `declare_tracking_stage_cost(m.tracking_stage_con)` | Equality defining the setpoint-tracking running cost; its left-hand-side scalar goes in the objective. The setpoint it references is the declared steady-state Param (below). |
-| Economic stage cost | Constraint | `declare_economic_stage_cost(m.economic_stage_con)` | Equality defining the economic running cost; the same objective the steady-state RTO mode uses. |
+| Tracking stage cost | Constraint | `declare_tracking_stage_cost(m.tracking_stage_con)` | Per-time-point equality for the setpoint-tracking running cost; drto sums its left-hand-side cost var over time in the objective. |
+| Economic stage cost | Constraint | `declare_economic_stage_cost(m.economic_stage_con)` | Per-time-point equality for the economic running cost; its single-point steady-state form is the RTO objective. |
 | Tracking terminal cost | Constraint | `declare_tracking_terminal_cost(m.tracking_terminal_con)` | Equality defining the terminal tracking cost; its left-hand-side scalar goes in the objective. |
 | Initial condition | Constraint | `declare_initial_condition(m.init_con)` | Equality anchoring the initial state; left-hand side is the state at t0, right-hand side the feedback. |
 | Terminal constraint | Constraint | `declare_terminal_constraint(m.terminal_con)` | Constraint on the states at the final time; the terminal set the final state must lie in. |
