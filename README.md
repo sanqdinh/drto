@@ -44,8 +44,10 @@ mode):
 
 | DRTO object type | Pyomo object type | Declaration | What it is |
 | --- | --- | --- | --- |
-| Time set | Set | `declare_time(m.t)` | The moving-horizon dimension. A `pyomo.dae` ContinuousSet or a discrete Set; drto reads dynamics from the DerivativeVars taken with respect to it. |
-| State | Variable | `declare_state(m.z, ...)` | A differential state. drto reads its dynamics from the state's `DerivativeVar`. |
+| Time set | Set | `declare_time(m.t)` | The moving-horizon dimension. A `pyomo.dae` ContinuousSet or a discrete Set; the root handle for the horizon. Dynamics are declared separately, below. |
+| State | Variable | `declare_state(m.z, ...)` | A differential state; its dynamics are declared separately, below. |
+| Continuous dynamics | Constraint | `declare_continuous_dynamics(m.ode_con)` | Equality ODE; its left-hand side is the state's DerivativeVar (dz/dt). |
+| Discrete dynamics | Constraint | `declare_discrete_dynamics(m.diff_con)` | Equality difference equation; its left-hand side is the state at the next time point (z[k+1]). |
 | Control | Variable | `declare_control(m.u, ..., profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp, over the declared time set. |
 | Tracking stage cost | Constraint | `declare_tracking_stage_cost(m.tracking_stage_con)` | Equality defining the setpoint-tracking running cost; its left-hand-side scalar goes in the objective. The setpoint it references is the declared steady-state Param (below). |
 | Economic stage cost | Constraint | `declare_economic_stage_cost(m.economic_stage_con)` | Equality defining the economic running cost; the same objective the steady-state RTO mode uses. |
