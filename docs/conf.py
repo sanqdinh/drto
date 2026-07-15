@@ -29,6 +29,7 @@ myst_enable_extensions = ["colon_fence", "deflist", "dollarmath"]
 
 html_theme = "sphinx_book_theme"
 html_title = "drto"
+html_baseurl = "https://docs.drto.io/"
 html_theme_options = {
     "repository_url": "https://github.com/devin-griff/drto",
     "repository_branch": "main",

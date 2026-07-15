@@ -36,6 +36,7 @@ docs = ["sphinx", "myst-nb", "sphinx-book-theme", "sphinx-copybutton"]
 
 [project.urls]
 Homepage = "https://github.com/devin-griff/drto"
+Documentation = "https://docs.drto.io"
 Repository = "https://github.com/devin-griff/drto"
 Issues = "https://github.com/devin-griff/drto/issues"
 

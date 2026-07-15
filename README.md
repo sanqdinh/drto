@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/drto.svg)](https://pypi.org/project/drto/)
 [![Python versions](https://img.shields.io/pypi/pyversions/drto.svg)](https://pypi.org/project/drto/)
 [![CI](https://github.com/devin-griff/drto/actions/workflows/ci.yml/badge.svg)](https://github.com/devin-griff/drto/actions/workflows/ci.yml)
+[![Docs](https://readthedocs.org/projects/drto/badge/?version=latest)](https://docs.drto.io/)
 [![License](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](LICENSE)
 
 DRTO is a unified framework for dynamic real-time optimization built on
