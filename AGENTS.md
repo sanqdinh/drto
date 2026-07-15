@@ -56,9 +56,9 @@ than inventing a new one.
 ## Definition of done
 
 A user-facing change is not done until code plus a pinning `pytest`, a bullet
-under `## [Unreleased]` in `CHANGELOG.md`, and the relevant
-README/docstring/notebook update all land in the same change. See
-CONTRIBUTING.md.
+under `## [Unreleased]` in `CHANGELOG.md`, and its documentation (docstrings, a
+`docs/` guide or API page, and an example notebook where it applies) all land in
+the same change. See CONTRIBUTING.md.
 
 A code review or a multi-session task is not done until its `dev-notes/`
 tracker records every item with a verification receipt (see

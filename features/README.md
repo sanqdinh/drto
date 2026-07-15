@@ -14,6 +14,7 @@ implemented. A feature spec is one Markdown file, numbered in order
   why it is worth building.
 - `## Acceptance criteria`: the concrete, testable conditions the
   implementation must satisfy. They drive the tests and the definition of
-  done.
+  done, which includes the feature's documentation (a `docs/` page and, where
+  it applies, an example notebook).
 
 `001-info.md` is the first example.

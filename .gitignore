@@ -20,6 +20,9 @@ coverage.xml
 venv/
 env/
 
+# Docs
+docs/_build/
+
 # Notebooks
 .ipynb_checkpoints/
 
