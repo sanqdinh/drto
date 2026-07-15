@@ -45,9 +45,10 @@ plus steady-state RTO. Estimation is the planned follow-on.
 
 ## Transformations
 
-Each mode is a Pyomo transformation registered under the `drto.` namespace.
-You build one declared model and apply the transformation for the mode you
-want, the same way you apply any Pyomo transformation.
+The six modes above are the **open-loop modes**, each a single solve exposed
+as a Pyomo transformation under the `drto.` namespace. You build one declared
+model and apply the transformation for the mode you want, the same way you
+apply any Pyomo transformation.
 
 | Mode | Transformation |
 | --- | --- |
@@ -62,6 +63,11 @@ Two lower-level transformations do the shared work the mode transformations
 compose: `drto.build_objective` assembles the objective from the live cost
 terms, and `drto.dynamic_to_steady_state` reduces the dynamic model to its
 steady-state form that the steady-state modes build on.
+
+## Closed-loop modes
+
+On top of the open-loop modes come the four **closed-loop modes**: `NMPC`,
+`MHE`, `asNMPC`, and `asMHE`. These are specced later.
 
 ## Declaring a control problem
 
