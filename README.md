@@ -74,6 +74,24 @@ transformation.
 Separately from the modes come four **closed-loop frameworks**: `NMPC`,
 `asNMPC`, `MHE`, and `asMHE`. These are specced later.
 
+## Initialization
+
+A good initial guess is often the difference between an IPOPT solve that
+converges and one that stalls, so drto provides named initializers rather than
+leaving each user to hand-roll one. These are plain functions, not
+transformations: they leave the model structure alone and only populate the
+variable values (the initial guess), so there is no `apply_to` or
+`create_using` form.
+
+| Initializer | What it does |
+| --- | --- |
+| `initialize_steady_state` | Solve the steady-state form and broadcast that equilibrium across every time point: a flat starting trajectory. |
+| `cold_start_dynamic` | Simulate the model forward from the initial condition under nominal controls, a feasible starting trajectory for the first solve with no history. |
+| `warm_start_dynamic` | Shift the previous horizon's solution forward one step and fill the tail: the standard receding-horizon warm start. |
+
+`warm_start_dynamic` is really a loop operation that belongs with the
+closed-loop frameworks, listed here alongside its siblings for completeness.
+
 ## Declaring a control problem
 
 drto is declaration-first, and each declaration tags a Pyomo component you
