@@ -60,6 +60,10 @@ under `## [Unreleased]` in `CHANGELOG.md`, and the relevant
 README/docstring/notebook update all land in the same change. See
 CONTRIBUTING.md.
 
+A code review or a multi-session task is not done until its `dev-notes/`
+tracker records every item with a verification receipt (see
+`dev-notes/README.md`).
+
 ## House style
 
 No em dashes anywhere: code, comments, docs, commit messages, changelog.

@@ -25,3 +25,29 @@ Use these patterns so an agent can Glob for a genre:
 Open with a one-line **Status**. When a note's framing is overtaken by later
 findings, append a "Progress / current state" section that corrects the
 original rather than editing it away, so the correction stays visible.
+
+## Progress trackers
+
+A progress tracker is a `/loop`-walkable worklist. Two shapes, by what the
+items are:
+
+- **Status table** for triaging found problems (a code review, a tech-debt
+  sweep): one row per item with an ID, the finding, a status (`open`,
+  `fixed`, `verified-deferred`), and a receipt.
+- **Checkbox list** for executing planned tasks (a feature phase, a
+  migration): one `[ ]` per task, each with an acceptance check; flip to
+  `[x]` with a dated one-line result when it passes.
+
+The rule for both: nothing is marked done without an inline verification
+receipt. For a fix, state how the mechanism was confirmed, the test name, and
+that the test fails before the fix and passes after. For a task, state the
+acceptance check that passed. `verified-deferred` records the same
+confirmation but explains why the change is not being made here.
+
+Loop protocol: one item per iteration, do exactly that item, run its check,
+update its row or box, then stop. Do not batch; the value is small, verifiable
+steps.
+
+Keep a review and its tracker separate: the dated review note
+(`code-review-YYYY-MM.md`) is read-only once written and status moves in the
+tracker, so the findings stay stable while progress accrues.
