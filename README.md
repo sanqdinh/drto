@@ -66,8 +66,14 @@ transformation.
 
 ## Closed-loop frameworks
 
-Separately from the modes come four **closed-loop frameworks**: `NMPC`,
-`asNMPC`, `MHE`, and `asMHE`. These are specced later.
+Separately from the modes come four **closed-loop frameworks**, the dynamic
+optimization and estimation loops in ideal and advanced-step forms. These are
+specced later.
+
+|  | Ideal | Advanced Step |
+| --- | --- | --- |
+| **Optimization** | `NMPC` | `asNMPC` |
+| **Estimation** | `MHE` | `asMHE` |
 
 ## Initialization routines
 
