@@ -87,7 +87,7 @@ variable values (the initial guess), so there is no `apply_to` or
 `warm_start_dynamic` is really a loop operation that belongs with the
 closed-loop frameworks, listed here alongside its siblings for completeness.
 
-## Declaring a control problem
+## Declaring an optimization or simulation problem
 
 drto is declaration-first, and each declaration tags a Pyomo component you
 already wrote: a Variable, a Constraint, a Parameter, or a Set. You build your dynamic model as
