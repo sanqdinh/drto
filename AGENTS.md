@@ -18,6 +18,10 @@ declaration or API surface, read DESIGN.md. A decision logged there as
 reinterpret it. If new work seems to require changing one, surface it and
 ask, do not just diverge.
 
+Development is spec-first: each feature is specified in `features/` before it
+is implemented. Read the feature's spec and build to its acceptance criteria,
+which drive the tests and the definition of done. See `features/README.md`.
+
 ## Repo conventions
 
 Canonical commands (they mirror CI, so local green means CI green; do not
