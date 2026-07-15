@@ -46,11 +46,12 @@ plus steady-state RTO. Estimation is the planned follow-on.
 ## Transformations
 
 The six modes above are the **open-loop modes**, each a single solve exposed
-as a Pyomo transformation under the `drto.` namespace. You build one declared
-model and apply the transformation for the mode you want, the same way you
-apply any Pyomo transformation.
+as a Pyomo transformation under the `drto.` namespace, alongside the two
+lower-level transformations they compose. You build one declared model and
+apply the transformation you want, the same way you apply any Pyomo
+transformation.
 
-| Mode | Transformation |
+| Transformation | Registered as |
 | --- | --- |
 | Steady-state simulation | `drto.steady_state_simulation` |
 | Steady-state optimization | `drto.steady_state_optimization` |
@@ -58,11 +59,8 @@ apply any Pyomo transformation.
 | Dynamic simulation | `drto.dynamic_simulation` |
 | Dynamic optimization | `drto.dynamic_optimization` |
 | Dynamic estimation | `drto.dynamic_estimation` |
-
-Two lower-level transformations do the shared work the mode transformations
-compose: `drto.build_objective` assembles the objective from the live cost
-terms, and `drto.dynamic_to_steady_state` reduces the dynamic model to its
-steady-state form that the steady-state modes build on.
+| Objective assembly | `drto.build_objective` |
+| Steady-state reduction | `drto.dynamic_to_steady_state` |
 
 ## Closed-loop modes
 
