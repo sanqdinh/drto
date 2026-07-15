@@ -43,6 +43,26 @@ The near-term focus is the optimization column: dynamic NMPC/D-RTO, whose
 ideal, real-time, and advanced-step execution variants are the headline,
 plus steady-state RTO. Estimation is the planned follow-on.
 
+## Transformations
+
+Each mode is a Pyomo transformation registered under the `drto.` namespace.
+You build one declared model and apply the transformation for the mode you
+want, the same way you apply any Pyomo transformation.
+
+| Mode | Transformation |
+| --- | --- |
+| Steady-state simulation | `drto.steady_state_simulation` |
+| Steady-state optimization | `drto.steady_state_optimization` |
+| Steady-state estimation | `drto.steady_state_estimation` |
+| Dynamic simulation | `drto.dynamic_simulation` |
+| Dynamic optimization | `drto.dynamic_optimization` |
+| Dynamic estimation | `drto.dynamic_estimation` |
+
+Two lower-level transformations do the shared work the mode transformations
+compose: `drto.build_objective` assembles the objective from the live cost
+terms, and `drto.dynamic_to_steady_state` reduces the dynamic model to its
+steady-state form that the steady-state modes build on.
+
 ## Declaring a control problem
 
 drto is declaration-first, and each declaration tags a Pyomo component you
