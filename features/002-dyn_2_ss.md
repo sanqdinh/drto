@@ -1,6 +1,6 @@
 # drto.dyn_2_ss
 
-**Status:** draft
+**Status:** ready
 
 ## Description
 
@@ -25,8 +25,9 @@ many modes" promise.
   clearly if any is missing.
 - It validates that each continuous-dynamics constraint's left-hand side is the
   DerivativeVar of a declared state, and errors clearly otherwise.
-- It removes the declared initial condition, terminal constraint, and terminal
-  cost if present.
+- It removes, if present, the declared initial condition, terminal constraint,
+  and both terminal costs (the tracking terminal cost and the estimation
+  terminal cost).
 - For each continuous-dynamics constraint, it adds a constraint fixing that
   state's DerivativeVar to zero (`dz/dt == 0`).
 - It removes the time index from every variable and constraint, collapsing the
