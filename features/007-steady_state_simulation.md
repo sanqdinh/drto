@@ -21,6 +21,10 @@ rather than duplicating it.
   clearly if any is missing.
 - It composes `drto.dynamic_to_steady_state` (feature 004) to collapse the model
   to a single equilibrium point, with the declared controls fixed.
+- The objective is just zero: the transform deactivates any existing objective
+  and installs a constant-zero `Objective`, giving an NLP solver a well-posed
+  square problem for the fixed-control equilibrium. It does not call
+  `drto.build_objective`, since a simulation has no cost term to assemble.
 - Solving the transformed model gives an equilibrium that satisfies the dynamics
   at rest and the model's algebraic relations.
 - It works through both `apply_to` (in place) and `create_using` (a transformed
