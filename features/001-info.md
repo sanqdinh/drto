@@ -8,7 +8,8 @@ As a user of DRTO, I want DRTO to keep a single record on my model of what I
 have declared and which transformations have been applied, so that the
 transformations can find my declared components, guard themselves against
 invalid or repeated application, and compose without stepping on each other,
-and so that I can inspect what DRTO has done to the model.
+and so that I can read back a clear, DRTO-aware view of what DRTO has done to
+the model.
 
 ## Benefit hypothesis
 
@@ -43,3 +44,14 @@ cloning, which the `create_using` form of every transformation depends on.
   transformation additionally cross-checks the model itself, for example that
   the objective it would build is not already present. If the user mutates the
   model outside DRTO mid-pipeline, the outcome is not guaranteed.
+- Displaying `drto.info(m)` renders a readable, DRTO-aware view of the model: a
+  `__repr__` for the console and a `_repr_html_` for a Jupyter notebook panel,
+  while its attributes stay queryable.
+- The view groups components by role (the horizon or single point, states,
+  controls marked free or fixed, dynamics, stage and terminal costs, boundary
+  conditions, steady-state targets), one labeled line each, using the index set
+  rather than expanding every time point.
+- It renders the objective in compact symbolic form and annotates each applied
+  transformation's outcome (what it freed or fixed, the terms it dropped, the
+  objective it assembled, whether it kept or collapsed the horizon), read from
+  the transformation log.
