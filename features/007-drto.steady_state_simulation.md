@@ -12,7 +12,10 @@ find the resting operating point from the one model.
 
 Deriving the equilibrium from the same declarations makes the resting state
 model-consistent by construction, and it composes the steady-state reduction
-rather than duplicating it.
+rather than duplicating it. Because that reduction is optional, this mode also
+runs on a model the user wrote directly as steady-state, not only a dynamic
+model reduced to rest, so one declaration surface lets a steady-state model be
+used across the modes.
 
 ## Acceptance criteria
 

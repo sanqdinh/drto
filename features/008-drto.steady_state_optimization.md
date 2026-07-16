@@ -12,7 +12,9 @@ get the optimal steady operating point (economic RTO) from the one model.
 
 The economic RTO point derived this way is a true equilibrium of the dynamics,
 so the setpoint the NMPC tracks is model-consistent rather than a hand-typed
-pair. This is what makes the D-RTO name literal.
+pair. This is what makes the D-RTO name literal. Because the reduction is
+optional, the mode runs on a model reduced from dynamic or one the user wrote
+directly as steady-state, so the same declaration surface serves both.
 
 ## Acceptance criteria
 
