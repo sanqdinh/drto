@@ -21,8 +21,8 @@ directly as steady-state, so the same declaration surface serves both.
 - `TransformationFactory('drto.steady_state_optimization')` requires
   `declare_state`, `declare_control`, and an economic stage cost, and errors
   clearly if any is missing. `declare_time` and `declare_continuous_dynamics`
-  are optional, since drto cannot tell whether the user built a dynamic model or
-  a steady-state one.
+  are optional, since the user may define either a steady-state or dynamic model
+  initially.
 - If the model is dynamic (time and continuous dynamics declared), it reduces to
   a single point by composing `drto.dynamic_to_steady_state` (feature 004). If
   the model is already steady-state, that step is skipped. The declared controls

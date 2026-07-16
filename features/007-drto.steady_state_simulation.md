@@ -21,8 +21,8 @@ used across the modes.
 
 - `TransformationFactory('drto.steady_state_simulation')` requires
   `declare_state`, and errors clearly if it is missing. `declare_time` and
-  `declare_continuous_dynamics` are optional, since drto cannot tell whether the
-  user built a dynamic model or a steady-state one.
+  `declare_continuous_dynamics` are optional, since the user may define either a
+  steady-state or dynamic model initially.
 - If the model is dynamic (time and continuous dynamics declared), it reduces to
   a single equilibrium point by composing `drto.dynamic_to_steady_state`
   (feature 004). If the model is already steady-state, that step is skipped.
