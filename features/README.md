@@ -10,21 +10,21 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 
 | Feature | State |
 | --- | --- |
-| [001 info](001-info.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [002 declarations](002-declarations.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [003 build_objective](003-build_objective.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [004 dynamic_to_steady_state](004-dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [005 dynamic_optimization](005-dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [006 dynamic_simulation](006-dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [007 steady_state_simulation](007-steady_state_simulation.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [008 steady_state_optimization](008-steady_state_optimization.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [009 initialize_steady_state](009-initialize_steady_state.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [010 cold_start_dynamic](010-cold_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [011 advanced_step_controller](011-advanced_step_controller.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [012 warm_start_dynamic](012-warm_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [013 ideal_nmpc](013-ideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [014 asnmpc](014-asnmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [015 nonideal_nmpc](015-nonideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [001 drto.info](001-drto.info.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [002 Dynamic optimization and simulation declarations](002-dynamic_optimization_and_simulation_declarations.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [003 drto.build_objective](003-drto.build_objective.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [004 drto.dynamic_to_steady_state](004-drto.dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [005 drto.dynamic_optimization](005-drto.dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [006 drto.dynamic_simulation](006-drto.dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [007 drto.steady_state_simulation](007-drto.steady_state_simulation.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [008 drto.steady_state_optimization](008-drto.steady_state_optimization.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [009 drto.initialize_steady_state](009-drto.initialize_steady_state.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [010 drto.cold_start_dynamic](010-drto.cold_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [011 drto.advanced_step_controller](011-drto.advanced_step_controller.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [012 drto.warm_start_dynamic](012-drto.warm_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [013 drto.ideal_nmpc](013-drto.ideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [014 drto.asnmpc](014-drto.asnmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [015 drto.nonideal_nmpc](015-drto.nonideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 
 ## Template
 
@@ -40,4 +40,4 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
   done, which includes the feature's documentation (a `docs/` page and, where
   it applies, an example notebook).
 
-`001-info.md` is the first example.
+`001-drto.info.md` is the first example.
