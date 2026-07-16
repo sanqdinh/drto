@@ -16,8 +16,8 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 | [004 drto.dynamic_to_steady_state](004-drto.dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [005 drto.dynamic_optimization](005-drto.dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [006 drto.dynamic_simulation](006-drto.dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [007 drto.steady_state_simulation](007-drto.steady_state_simulation.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [008 drto.steady_state_optimization](008-drto.steady_state_optimization.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [007 drto.steady_state_simulation](007-drto.steady_state_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [008 drto.steady_state_optimization](008-drto.steady_state_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [009 drto.initialize_steady_state](009-drto.initialize_steady_state.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [010 drto.cold_start_dynamic](010-drto.cold_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [011 drto.advanced_step_controller](011-drto.advanced_step_controller.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
