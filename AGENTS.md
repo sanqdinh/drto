@@ -78,7 +78,7 @@ Not built yet; recorded so the first code lands in the right shape:
 - The declaration surface (`declare_state`, `declare_control`, the cost and
   boundary declarations, the estimation declarations) is the public API.
 - One receding-horizon loop underlies the six modes (steady-state / dynamic
-  by simulation / optimization / estimation); the ideal / real-time /
+  by simulation / optimization / estimation); the ideal / nonideal /
   advanced-step execution variants are variants of dynamic optimization, not
   separate modes.
 - The sensitivity fast update rides on pyomo-pounce; control parameterization

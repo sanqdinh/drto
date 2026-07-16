@@ -43,7 +43,7 @@ horizon. The optimization and estimation columns are duals (NMPC with MHE,
 RTO with reconciliation), so one declaration surface serves both.
 
 The near-term focus is the optimization column: dynamic NMPC/D-RTO, whose
-ideal, real-time, and advanced-step execution variants are the headline,
+ideal, nonideal, and advanced-step execution variants are the headline,
 plus steady-state RTO. Estimation is the planned follow-on.
 
 ## Transformations
