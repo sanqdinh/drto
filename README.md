@@ -110,7 +110,7 @@ object types of a dynamic optimization or simulation problem:
 
 | DRTO object type | Pyomo object type | Declaration | What it is |
 | --- | --- | --- | --- |
-| Time set | Set | `declare_time(m.t)` | The moving-horizon dimension. A `pyomo.dae` ContinuousSet or a discrete Set; the root handle for the horizon. Dynamics are declared separately, below. |
+| Time set | Set | `declare_time(m.t)` | The moving-horizon dimension. A `pyomo.dae` ContinuousSet, the root handle for the horizon. Dynamics are declared separately, below. |
 | State | Variable | `declare_state(m.z, ...)` | A differential state; its dynamics are declared separately, below. |
 | Continuous dynamics | Constraint | `declare_continuous_dynamics(m.ode_con)` | Equality ODE; its left-hand side is the state's DerivativeVar (dz/dt). |
 | Control | Variable | `declare_control(m.u, ..., profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp, over the declared time set. |

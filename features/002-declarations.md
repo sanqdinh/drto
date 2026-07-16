@@ -38,8 +38,7 @@ declarations rather than re-deriving them.
   model has one of each. A varargs declaration accumulates across calls, but
   declaring the same component twice is rejected as a duplicate. Both checks run
   against the registry (feature 001).
-- `declare_time(m.t)` tags the horizon Set. It accepts a `pyomo.dae`
-  ContinuousSet or a discrete Set; DRTO does not assume continuity.
+- `declare_time(m.t)` tags the horizon Set, a `pyomo.dae` ContinuousSet.
 - `declare_state(m.z, ...)` tags one or more differential-state Vars.
 - `declare_control(m.u, ..., profile=...)` tags one or more manipulated-input
   Vars and sets their parameterization (piecewise-constant, ...) over the

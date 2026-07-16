@@ -101,7 +101,10 @@ estimation-side surface follows below):
 - `declare_time(m.t)`: tags the time set, the moving-horizon dimension
   shared by every dynamic mode. It may be a `pyomo.dae` ContinuousSet
   (continuous-time) or a discrete Set (discrete-time, difference equations),
-  so drto does not assume continuity (USER DECISION 2026-07-14). Declaring
+  so drto does not assume continuity (USER DECISION 2026-07-14). Continuous
+  time is the current build scope, and the discrete-time path (a discrete Set
+  plus `declare_discrete_dynamics` below) is deferred, kept in this design for
+  later (USER DECISION 2026-07-16). Declaring
   it is the root handle for the moving-horizon machinery: t0 and tN come off
   its bounds, the warm shift advances along it, and the discretization lives
   on it. The dynamics are declared (below), not scanned for, so drto does
@@ -122,7 +125,8 @@ estimation-side surface follows below):
   respect to the declared time set (verified against Pyomo 6.10). That check
   is why `declare_state` earns its place even though the dynamics carry the
   DerivativeVar. USER DECISION 2026-07-14.
-- `declare_discrete_dynamics(m.diff_con)`: tags the equality Constraint of a
+- `declare_discrete_dynamics(m.diff_con)` (deferred, continuous is the current
+  scope, see `declare_time`): tags the equality Constraint of a
   discrete-time difference equation. Its LHS is a state at the next time
   point (z[k+1]), read the same way; drto gets the state (a plain Var, which
   distinguishes it from the continuous case) and advances it along the
