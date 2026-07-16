@@ -10,8 +10,8 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 
 | Feature | State |
 | --- | --- |
-| [001 drto.info](001-info.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [002 declarations](002-declarations.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [001 drto.info](001-info.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [002 declarations](002-declarations.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [003 build_objective](003-build_objective.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [004 dynamic_to_steady_state](004-dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [005 dynamic_optimization](005-dynamic_optimization.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |

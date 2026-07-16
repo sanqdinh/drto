@@ -1,6 +1,6 @@
 # drto.info
 
-**Status:** draft
+**Status:** ready
 
 ## Description
 
