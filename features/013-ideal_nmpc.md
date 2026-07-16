@@ -1,4 +1,4 @@
-# drto.nmpc
+# drto.ideal_nmpc
 
 **Status:** ![draft](https://img.shields.io/badge/draft-lightgrey)
 
@@ -17,7 +17,7 @@ advanced-step variant is measured against.
 
 ## Acceptance criteria
 
-- `drto.nmpc(m, ...)` runs the ideal NMPC loop on a model carrying the
+- `drto.ideal_nmpc(m, ...)` runs the ideal NMPC loop on a model carrying the
   dynamic-optimization declarations. Each cycle it writes the measured state into
   the initial-condition parameter, solves via `drto.dynamic_optimization`,
   applies the first control move, and warm-starts the next cycle with

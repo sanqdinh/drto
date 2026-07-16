@@ -26,6 +26,6 @@ dependency exists.
 - The expensive solve is off the critical path, at the predicted state between
   samples. The online step is the fast sensitivity correction, not a re-solve.
 - It reads the states, controls, and initial-condition parameter from `drto.info`,
-  and runs the same shared receding-horizon loop skeleton as `drto.nmpc`.
+  and runs the same shared receding-horizon loop skeleton as `drto.ideal_nmpc`.
 - It takes a source of the measured state each cycle and a way to predict the
   next state (for example a forward simulation of the model).
