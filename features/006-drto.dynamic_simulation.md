@@ -20,10 +20,10 @@ validation runs rely on.
   `declare_state`, `declare_continuous_dynamics`, and `declare_control`, and
   errors clearly if any is missing.
 - The declared controls are fixed, so the mode frees nothing and solves the
-  model as declared over the horizon. A control-profile option sets what they
-  are fixed to: the full declared profile, where each control follows its
-  parameterized trajectory over the horizon, or held constant, where each
-  control is held at its value at the initial time across the whole horizon.
+  model as declared over the horizon. A control-profile option sets the values
+  they are fixed to: a supplied constant, held across the horizon, or a supplied
+  profile over the time set. With nothing supplied, the controls stay at the
+  values the control variables are already initialized to on the model.
 - The objective is zero: the transform calls `drto.build_objective` (feature
   003) with the option for a simulation, which installs a constant-zero
   `Objective` and gives an NLP solver a well-posed square problem for the
