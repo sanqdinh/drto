@@ -21,6 +21,10 @@ rather than duplicating it.
   clearly if any is missing.
 - It composes `drto.dynamic_to_steady_state` (feature 004) to collapse the model
   to a single equilibrium point, with the declared controls fixed.
+- A control option sets the values the fixed controls take: supplied control
+  values, or with nothing supplied, the values the control variables are already
+  initialized to on the model. The steady state is a single point, so the
+  supplied form is values, not a profile.
 - The objective is zero: the transform calls `drto.build_objective` (feature
   003) with the option for a simulation, which installs a constant-zero
   `Objective` and gives an NLP solver a well-posed square problem for the
