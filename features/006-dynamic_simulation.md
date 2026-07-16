@@ -17,10 +17,14 @@ validation runs rely on.
 ## Acceptance criteria
 
 - `TransformationFactory('drto.dynamic_simulation')` requires `declare_time`,
-  `declare_state`, a dynamics declaration, and `declare_control`, and errors
-  clearly if any is missing.
+  `declare_state`, `declare_continuous_dynamics`, and `declare_control`, and
+  errors clearly if any is missing.
 - The declared controls are fixed; the mode frees nothing and solves the model
   as declared over the horizon.
+- The objective is just zero: the transform deactivates any existing objective
+  and installs a constant-zero `Objective`, giving an NLP solver a well-posed
+  square problem for the fixed-control model. It does not call
+  `drto.build_objective`, since a simulation has no cost term to assemble.
 - The transform keeps the time horizon.
 - It works through both `apply_to` (in place) and `create_using` (a transformed
   clone).
