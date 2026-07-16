@@ -1,6 +1,6 @@
 # Simulation and optimization declarations
 
-**Status:** ready
+**Status:** ![ready](https://img.shields.io/badge/ready-blue)
 
 ## Description
 

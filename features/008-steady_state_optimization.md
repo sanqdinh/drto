@@ -1,6 +1,6 @@
 # drto.steady_state_optimization
 
-**Status:** draft
+**Status:** ![draft](https://img.shields.io/badge/draft-lightgrey)
 
 ## Description
 

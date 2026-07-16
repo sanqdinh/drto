@@ -1,6 +1,6 @@
 # drto.dynamic_to_steady_state
 
-**Status:** ready
+**Status:** ![ready](https://img.shields.io/badge/ready-blue)
 
 ## Description
 

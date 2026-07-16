@@ -1,6 +1,6 @@
 # drto.build_objective
 
-**Status:** ready
+**Status:** ![ready](https://img.shields.io/badge/ready-blue)
 
 ## Description
 

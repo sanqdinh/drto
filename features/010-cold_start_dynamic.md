@@ -1,6 +1,6 @@
 # drto.cold_start_dynamic
 
-**Status:** draft
+**Status:** ![draft](https://img.shields.io/badge/draft-lightgrey)
 
 ## Description
 

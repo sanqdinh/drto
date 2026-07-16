@@ -1,6 +1,6 @@
 # drto.initialize_steady_state
 
-**Status:** draft
+**Status:** ![draft](https://img.shields.io/badge/draft-lightgrey)
 
 ## Description
 

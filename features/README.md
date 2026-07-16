@@ -24,8 +24,9 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 ## Template
 
 - `# <name>`: the capability or transform name, e.g. `drto.build_objective`.
-- `**Status:**` at the top: the feature's current state, one of `draft`,
-  `ready`, `implemented`, or `shipped`. Keep the status table above in sync.
+- `**Status:**` at the top: the feature's current state, shown as one of the
+  lifecycle badges above (`draft`, `ready`, `implemented`, `shipped`). Keep the
+  status table above in sync.
 - `## Description`: a user story, "As a user of DRTO, I want X, so that Y."
 - `## Benefit hypothesis`: the value the feature is expected to deliver and
   why it is worth building.
