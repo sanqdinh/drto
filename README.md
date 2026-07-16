@@ -76,6 +76,11 @@ specced later.
 | **Optimization** | `NMPC` | `asNMPC` |
 | **Estimation** | `MHE` | `asMHE` |
 
+The advanced-step column, `asNMPC` and `asMHE`, is built on
+`drto.advanced_step_controller`: it solves the horizon at a predicted state and
+then corrects to the actual state with a fast pounce sensitivity update rather
+than a re-solve.
+
 ## Initialization routines
 
 A good initial guess is often the difference between an IPOPT solve that
