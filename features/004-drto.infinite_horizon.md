@@ -100,7 +100,9 @@ move.
   sampling time past the junction, with `dt` read from the discretized
   horizon's element spacing. An explicit `gamma` option overrides the rule.
 - `beta` is a mutable Param set by an option, default 1.2, and must satisfy
-  `beta >= 1`, which the stability argument requires.
+  `beta > 1` (paper section 4.1.2): the terminal cost must overestimate the
+  tail, and the margin `beta - 1` is what covers the quadrature error, so
+  `beta = 1` leaves no room for the quadrature to err low.
 - Both Params are referenced symbolically everywhere they appear, `gamma` in
   the dilated dynamics and both in the tail weights, never baked in as
   numbers, so `set_value` retunes either between solves with the dynamics and
