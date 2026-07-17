@@ -24,6 +24,7 @@ from pyomo.common.dependencies import numpy, numpy_available
 from pyomo.core import (
     Block,
     Constraint,
+    Expression,
     Param,
     Transformation,
     TransformationFactory,
@@ -265,16 +266,6 @@ class InfiniteHorizonTransformation(Transformation):
         )
         check_template(psi, t_rep_cost, cd.name)
         cost_var = cost_side.parent_component()
-        first_cost = next(iter(cost_var.values()))
-        seg_cost = Var(b.tau, domain=first_cost.domain, bounds=first_cost.bounds)
-        b.add_component(cost_var.local_name, seg_cost)
-
-        def cost_rule(blk, s):
-            if s in blk.tau.get_finite_elements():
-                return Constraint.Skip
-            return seg_cost[s] == substituted(psi, t_rep_cost, s)
-
-        b.add_component(stage_con.local_name, Constraint(b.tau, rule=cost_rule))
 
         # --- link the segment to the end of the horizon ---
         for z in states:
@@ -293,12 +284,24 @@ class InfiniteHorizonTransformation(Transformation):
         gamma_val = config.gamma if config.gamma is not None else math.atanh(tau11) / dt
         b.gamma.set_value(gamma_val)
 
+        # --- the tracking stage cost, replicated as named Expressions at the
+        # interior collocation points: the tail integrand. Expressions add no
+        # variables and no constraints (a replicated cost Var would sit on an
+        # active bound as the tail cost vanishes at the equilibrium), and
+        # cvp's substitution sweep rewrites them like any constraint ---
+        pts = sorted(b.tau)
+        fe = b.tau.get_finite_elements()
+        interior_pts = [p for p in pts if p not in fe]
+        seg_cost = Expression(
+            interior_pts, rule=lambda blk, s: substituted(psi, t_rep_cost, s)
+        )
+        b.add_component(cost_var.local_name, seg_cost)
+
         # --- hard equilibrium endpoint, 0 = f at tau = 1 (eq. 21c). The
         # state values at tau = 1 come from the Legendre extrapolation; the
         # control values come from the segment profile: the polynomial's
         # endpoint for 'collocation', the last element's constant for
         # 'piecewise_constant' ---
-        fe = b.tau.get_finite_elements()
         u_point = 1 if config.profile == "collocation" else fe[-2]
         for con, z, rhs, t_rep in rhs_templates:
             emap = {}
@@ -321,7 +324,6 @@ class InfiniteHorizonTransformation(Transformation):
         # --- the tail cost: explicit Gauss weights, (beta/dt) * phi_f with
         # the quadrature state eliminated. beta and gamma stay symbolic in
         # the weights, so set_value retunes them without a re-apply ---
-        pts = sorted(b.tau)
         interior = [[p for p in pts if lo < p < hi] for lo, hi in zip(fe, fe[1:])]
         h0 = fe[1] - fe[0]
         omega = _gauss_weights([(p - fe[0]) / h0 for p in interior[0]])

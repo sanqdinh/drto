@@ -18,6 +18,12 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- `drto.infinite_horizon` replicates the stage cost as named Expressions
+  rather than a cost Var with defining constraints: the tail adds no
+  variables or constraints, and no bounded intermediates sit at their bound
+  as the tail cost vanishes (192/154/66-iteration solves drop to 177/139/8
+  on the Hicks study).
+
 - `declare_time` captures the sample grid (the ContinuousSet's initialized
   points) and requires an undiscretized set with at least two points; the
   stage-cost sum in `build_objective` runs at the samples, keeping the finite

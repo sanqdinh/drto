@@ -81,9 +81,12 @@ move.
 - The endpoint is a hard equilibrium constraint, `0 = f` at `tau = 1`. There
   are no setpoint pins: the stage cost selects the equilibrium. The
   soft-constrained endpoint (paper eq. 36) is a follow-on, out of scope here.
-- The tail cost uses no quadrature state. The declared tracking stage cost is
-  replicated at the segment collocation points and enters the objective as
-  explicit weighted terms, `beta * h_i * omega_k * psi_ik /
+- The tail cost uses no quadrature state and adds no variables or
+  constraints: the declared tracking stage cost is replicated at the segment
+  collocation points as named Expressions (a replicated cost Var would sit on
+  an active bound as the tail cost vanishes at the equilibrium, wrecking
+  interior-point performance) and enters the objective as explicit weighted
+  terms, `beta * h_i * omega_k * psi_ik /
   (gamma * dt * (1 - tau_ik^2))`, the paper's `(beta/dt) * phi_f`, so the tail
   is commensurate with the per-sample stage sum. They are assembled by
   `drto.build_objective` (feature 003)

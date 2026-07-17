@@ -190,7 +190,11 @@ def test_tail_terms_reach_the_objective():
     in_obj = ComponentSet(identify_variables(obj.expr))
     (group,) = drto.info(m).declarations("cost_group")
     assert len(group["terms"]) == 15  # 3 elements x 5 points
-    assert all(var in in_obj for var, _ in group["terms"])
+    # the terms are named Expressions (no tail variables or constraints);
+    # every variable under them reaches the objective
+    for term, _ in group["terms"]:
+        for v in identify_variables(term.expr):
+            assert v in in_obj
 
 
 def test_beta_and_gamma_retune_without_reapply():
@@ -199,10 +203,9 @@ def test_beta_and_gamma_retune_without_reapply():
     b = m.drto_infinite_horizon
     drto.build_objective(m)
     for t in m.t:
-        if m.cost[t].value is None or True:
-            m.cost[t].set_value(0.0)
-    for s in b.cost.index_set():
-        b.cost[s].set_value(1.0)
+        m.cost[t].set_value(0.0)
+    for v in b.component_data_objects(pyo.Var):
+        v.set_value(0.5)
     obj = m.component("drto_objective")
     before = pyo.value(obj.expr)
     b.beta.set_value(2.4)
