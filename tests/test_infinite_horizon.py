@@ -185,6 +185,16 @@ def test_gamma_follows_the_mesh_rule_and_option_overrides():
     pyo.TransformationFactory(IH).apply_to(m2, gamma=0.05)
     assert pyo.value(m2.drto_infinite_horizon.gamma) == 0.05
 
+    m3 = ready_model()
+    pyo.TransformationFactory(IH).apply_to(m3, gamma="rule")
+    assert pyo.value(m3.drto_infinite_horizon.gamma) == pytest.approx(
+        pyo.value(m.drto_infinite_horizon.gamma)
+    )
+
+    m4 = ready_model()
+    with pytest.raises(ValueError, match="'rule' .* or a number"):
+        pyo.TransformationFactory(IH).apply_to(m4, gamma="fast")
+
 
 def test_tail_terms_reach_the_objective():
     m = ready_model()

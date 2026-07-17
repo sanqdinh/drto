@@ -108,10 +108,10 @@ class InfiniteHorizonTransformation(Transformation):
     CONFIG.declare(
         "gamma",
         ConfigValue(
-            default=None,
-            description="Time-compression rate. Defaults to the mesh rule: "
-            "the segment's first collocation point lands one sampling time "
-            "past the junction.",
+            default="rule",
+            description="Time-compression rate: 'rule' (the default) derives "
+            "it from the mesh rule, the segment's first collocation point "
+            "one sampling time past the junction; a number overrides.",
         ),
     )
     CONFIG.declare(
@@ -287,7 +287,16 @@ class InfiniteHorizonTransformation(Transformation):
 
         # --- gamma: the mesh rule, or the explicit override ---
         tau11 = sorted(b.tau)[1]
-        gamma_val = config.gamma if config.gamma is not None else math.atanh(tau11) / dt
+        if config.gamma in (None, "rule"):
+            gamma_val = math.atanh(tau11) / dt
+        else:
+            try:
+                gamma_val = float(config.gamma)
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"drto: gamma must be 'rule' (derive from the mesh "
+                    f"rule) or a number; got {config.gamma!r}."
+                ) from None
         b.gamma.set_value(gamma_val)
 
         # --- the tracking stage cost, replicated as named Expressions at the
