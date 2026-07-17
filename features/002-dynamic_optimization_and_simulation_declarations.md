@@ -87,6 +87,17 @@ def init(m):
     return m.z[0] == m.z_hat
 ```
 
+The constraint-role declarations also wrap a fresh Constraint directly. A
+detached Constraint can only be built with `rule=`, so the decorator form
+above is the usual construction style; the wrap form composes the same way.
+
+```python
+def ode_rule(m, t):
+    return m.dzdt[t] == -m.z[t] + m.u[t]
+
+m.ode = drto.dynamics(pyo.Constraint(m.t, rule=ode_rule))
+```
+
 The two styles mix freely: the same functions serve both, so a partly wrapped
 model can be finished by tagging and the reverse.
 
