@@ -33,7 +33,7 @@ it the same way every time.
   user can apply it on its own. The transform calls the same function, and both
   `apply_to` (in place) and `create_using` (a clone) work.
 - An empty cost sum is not a case build_objective has to guard: the optimization
-  transforms each require a stage cost (features 005 and 008), so it is never
+  transforms each require a stage cost (features 006 and 009), so it is never
   asked to assemble a cost objective with no live cost term. A dynamic
   optimization with no stage cost is impossible by construction, caught by the
   transform's requirements. The simulation modes take the zero option rather

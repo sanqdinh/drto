@@ -23,4 +23,4 @@ it consistent with the dynamics.
   model structure. It is a plain function, with no `apply_to` or `create_using`
   form.
 - The steady-state solve it uses is the same reduction as
-  `drto.dynamic_to_steady_state` (feature 004).
+  `drto.dynamic_to_steady_state` (feature 005).

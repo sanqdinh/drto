@@ -24,11 +24,11 @@ directly as steady-state, so the same declaration surface serves both.
   are optional, since the user may define either a steady-state or dynamic model
   initially.
 - If the model is dynamic (time and continuous dynamics declared), it reduces to
-  a single point by composing `drto.dynamic_to_steady_state` (feature 004). If
+  a single point by composing `drto.dynamic_to_steady_state` (feature 005). If
   the model is already steady-state, that step is skipped. The declared controls
   are free.
 - The objective is the single-point economic cost, assembled via
-  `drto.build_objective` (feature 003).
+  `drto.build_objective` (feature 004).
 - Solving the transformed model gives the optimal steady operating point.
 - It works through both `apply_to` (in place) and `create_using` (a transformed
   clone).

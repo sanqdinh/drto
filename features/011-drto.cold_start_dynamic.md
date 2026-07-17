@@ -22,4 +22,4 @@ reducing first-solve failures.
   model structure. It is a plain function, with no `apply_to` or `create_using`
   form.
 - The forward simulation it uses is the `drto.dynamic_simulation` mode
-  (feature 006).
+  (feature 007).

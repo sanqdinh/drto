@@ -51,7 +51,7 @@ move.
 - The tail cost uses no quadrature state. The declared stage cost is
   replicated at the segment collocation points and enters the objective as
   explicit weighted terms, `beta * h_i * omega_k * psi_ik /
-  (gamma*(1 - tau_ik^2))`, assembled by `drto.build_objective` (feature 003)
+  (gamma*(1 - tau_ik^2))`, assembled by `drto.build_objective` (feature 004)
   as an option-dependent outcome. The Gauss weights are derived from the
   discretization's stored collocation nodes, since `pyomo.dae` stores nodes
   but no quadrature weights, and the result equals the paper's
@@ -67,7 +67,7 @@ move.
 - `beta` is an option with default 1.2 and must satisfy `beta >= 1`, which
   the stability argument requires.
 - The transform records what it added in `drto.info` (feature 001), and
-  `drto.dynamic_optimization` (feature 005) composes it through an option as
+  `drto.dynamic_optimization` (feature 006) composes it through an option as
   its terminal strategy. It also works applied on its own, through both
   `apply_to` (in place) and `create_using` (a transformed clone).
 - Acceptance tests mirror the reference notebook: the short-horizon-plus-

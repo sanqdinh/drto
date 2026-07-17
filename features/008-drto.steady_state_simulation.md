@@ -25,14 +25,14 @@ used across the modes.
   steady-state or dynamic model initially.
 - If the model is dynamic (time and continuous dynamics declared), it reduces to
   a single equilibrium point by composing `drto.dynamic_to_steady_state`
-  (feature 004). If the model is already steady-state, that step is skipped.
+  (feature 005). If the model is already steady-state, that step is skipped.
   Either way the declared controls are fixed.
 - A control option sets the values the fixed controls take: supplied control
   values, or with nothing supplied, the values the control variables are already
   initialized to on the model. The steady state is a single point, so the
   supplied form is values, not a profile.
 - The objective is zero: the transform calls `drto.build_objective` (feature
-  003) with the option for a simulation, which installs a constant-zero
+  004) with the option for a simulation, which installs a constant-zero
   `Objective` and gives an NLP solver a well-posed square problem for the
   fixed-control equilibrium.
 - Solving the transformed model gives an equilibrium that satisfies the dynamics
