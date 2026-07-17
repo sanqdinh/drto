@@ -36,3 +36,16 @@ transformations find it. Declarations that scale with the states and controls
 take varargs and accumulate; the one-of-each declarations error on a second,
 different object. Conventions are read from either side of the written
 equality, so `lhs == rhs` and `rhs == lhs` are equivalent.
+
+## Objective assembly: `drto.build_objective`
+
+One routine owns every mode's objective. The bare call assembles the live
+registered cost terms, each group by its weights: declared stage costs sum
+their per-point cost var over the active members (the stage cost does not
+exist at the final time, where the terminal cost applies), a terminal cost
+adds its scalar var, and transforms may register additional weighted cost
+groups. Liveness is component presence, so a mode drops a term by dropping or
+deactivating its constraint. The marked case, `zero=True`, installs a
+constant-zero objective and is what the simulation transforms pass. Any
+existing active objective is deactivated first, and the routine is also
+registered as `TransformationFactory('drto.build_objective')`.

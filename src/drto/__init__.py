@@ -23,6 +23,7 @@ from drto.declarations import (
     declare_tracking_terminal_cost,
 )
 from drto.info import Info, info
+from drto.objective import build_objective
 
 try:
     __version__ = version("drto")
@@ -32,6 +33,7 @@ except PackageNotFoundError:  # not installed (e.g. running from a source tree)
 __all__ = [
     "Info",
     "info",
+    "build_objective",
     "declare_time",
     "declare_state",
     "declare_continuous_dynamics",

@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 
+- `drto.build_objective` (feature 003): one routine owns objective
+  installation. Default assembles the live registered cost groups by their
+  weights (stage costs per active member, terminal cost, and generic
+  registered `cost_group` records); `zero=True` is the marked simulation
+  outcome. Also registered as `TransformationFactory('drto.build_objective')`.
+
 - The declaration surface (feature 002): `declare_time`, `declare_state`,
   `declare_continuous_dynamics`, `declare_control` (profile via pyomo-cvp),
   `declare_tracking_stage_cost`, `declare_economic_stage_cost`,
