@@ -274,6 +274,146 @@ def test_application_is_recorded():
 
 
 # ----------------------------------------------------------------------
+# states with extra indexes, and algebraic variables and equations
+# ----------------------------------------------------------------------
+def indexed_model():
+    """Two coupled first-order states as one Var over (i, t)."""
+    m = pyo.ConcreteModel()
+    N, h = 4, 2.5  # samples and sampling time
+    m.t = ContinuousSet(initialize=pyo.RangeSet(0, N * h, h))
+    m.i = pyo.Set(initialize=[1, 2])
+    m.tau_p = pyo.Param(initialize=1.0, mutable=True)  # time constant
+    m.x_ss = pyo.Param(m.i, initialize={1: 0.5, 2: 0.5}, mutable=True)
+    m.u_ss = pyo.Param(initialize=0.5, mutable=True)  # = x_ss: the fixed point
+    m.x_hat = pyo.Param(m.i, initialize={1: 0.2, 2: 0.8}, mutable=True)
+
+    m.x = pyo.Var(m.i, m.t, initialize=0.5)
+    m.dx = DerivativeVar(m.x, wrt=m.t)
+    m.u = pyo.Var(m.t, bounds=(0, 1), initialize=0.5)
+    m.cost = pyo.Var(m.t)
+
+    @m.Constraint(m.i, m.t)
+    def ode(m, i, t):
+        if i == 1:
+            return m.dx[1, t] == (-m.x[1, t] + m.u[t]) / m.tau_p
+        return m.dx[2, t] == (m.x[1, t] - m.x[2, t]) / m.tau_p
+
+    @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
+    def stage(m, t):
+        return m.cost[t] == sum((m.x[i, t] - m.x_ss[i]) ** 2 for i in m.i) + (m.u[t] - m.u_ss) ** 2
+
+    @m.Constraint(m.i)
+    def init(m, i):
+        return m.x[i, 0] == m.x_hat[i]
+
+    drto.horizon(m.t)
+    drto.state(m.x)
+    drto.dynamics(m.ode)
+    drto.control(m.u, profile="piecewise_constant")
+    drto.tracking_stage_cost(m.stage)
+    drto.initial_condition(m.init)
+    return m
+
+
+def dae_model():
+    """One state, one undeclared algebraic variable with its equation."""
+    m = pyo.ConcreteModel()
+    N, h = 4, 2.5  # samples and sampling time
+    m.t = ContinuousSet(initialize=pyo.RangeSet(0, N * h, h))
+    m.z_ss = pyo.Param(initialize=0.5, mutable=True)
+    m.u_ss = pyo.Param(initialize=0.5, mutable=True)  # = z_ss: the fixed point
+    m.z_hat = pyo.Param(initialize=0.2, mutable=True)
+
+    m.z = pyo.Var(m.t, initialize=0.5)
+    m.dz = DerivativeVar(m.z, wrt=m.t)
+    m.u = pyo.Var(m.t, bounds=(0, 1), initialize=0.5)
+    m.w = pyo.Var(m.t, initialize=0.5)  # algebraic: not declared
+    m.cost = pyo.Var(m.t)
+
+    @m.Constraint(m.t)
+    def w_def(m, t):
+        return m.w[t] == 0.5 * (m.z[t] + m.u[t])
+
+    @m.Constraint(m.t)
+    def ode(m, t):
+        return m.dz[t] == m.w[t] - m.z[t]
+
+    @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
+    def stage(m, t):
+        return m.cost[t] == (m.z[t] - m.z_ss) ** 2 + (m.w[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
+
+    @m.Constraint()
+    def init(m):
+        return m.z[0] == m.z_hat
+
+    drto.horizon(m.t)
+    drto.state(m.z)
+    drto.dynamics(m.ode)
+    # the continuous profile: an algebraic equation referencing a
+    # piecewise-constant control at the final node names no real decision
+    # (the cvp final-node convention), so this model uses 'collocation'
+    drto.control(m.u, profile="collocation")
+    drto.tracking_stage_cost(m.stage)
+    drto.initial_condition(m.init)
+    return m
+
+
+def test_indexed_state_segment_structure():
+    m = indexed_model()
+    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory(IH).apply_to(m)
+    b = m.drto_infinite_horizon
+    ntau = len(sorted(b.tau))
+    assert len(b.x) == 2 * ntau  # a copy member per (i, tau)
+    assert len(b.ode) == 2 * 15  # dilated dynamics per member
+    assert len(b.x_link) == 2  # linked per member
+    assert len(b.ode_equilibrium) == 2
+
+
+@needs_ipopt
+def test_indexed_state_reaches_the_fixed_point():
+    m = indexed_model()
+    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory(IH).apply_to(m)
+    pyo.TransformationFactory("drto.parameterize").apply_to(m)
+    drto.build_objective(m)
+    r = pyo.SolverFactory("ipopt").solve(m)
+    assert r.solver.termination_condition == pyo.TerminationCondition.optimal
+    b = m.drto_infinite_horizon
+    for i in m.i:
+        assert pyo.value(b.x[i, 1]) == pytest.approx(0.5, abs=1e-4)
+
+
+def test_algebraic_variables_are_discovered_and_replicated():
+    m = dae_model()
+    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory(IH).apply_to(m)
+    b = m.drto_infinite_horizon
+    # the algebraic copy exists without a declaration
+    assert b.component("w") is not None
+    # its equation holds at the interior points plus the endpoint only
+    fe = b.tau.get_finite_elements()
+    assert len(b.w_def) == 15 + 1
+    assert 1 in b.w_def and not any(s in b.w_def for s in fe[:-1])
+    (ih_rec,) = [r for r in drto.info(m).transformations if r["name"] == IH]
+    assert "1 components" in ih_rec["outcome"]["algebraic"]
+
+
+@needs_ipopt
+def test_algebraic_model_reaches_the_fixed_point():
+    m = dae_model()
+    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory(IH).apply_to(m)
+    pyo.TransformationFactory("drto.parameterize").apply_to(m)
+    drto.build_objective(m)
+    r = pyo.SolverFactory("ipopt").solve(m)
+    assert r.solver.termination_condition == pyo.TerminationCondition.optimal
+    b = m.drto_infinite_horizon
+    assert pyo.value(b.z[1]) == pytest.approx(0.5, abs=1e-4)
+    assert pyo.value(b.w[1]) == pytest.approx(0.5, abs=1e-4)
+
+
+# ----------------------------------------------------------------------
 # the numbers: the Hicks study, compressed
 # ----------------------------------------------------------------------
 @needs_ipopt

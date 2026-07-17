@@ -16,9 +16,20 @@ the paper's ``(beta/dt)*phi_f`` with the quadrature state eliminated,
 registered as a ``cost_group`` that ``drto.build_objective`` (feature 003)
 picks up wherever it runs. There is no coupling option: applying this
 transform before the mode transform is the whole composition.
+
+States may carry index sets besides time; copies, linking, equilibrium, and
+replication run per member. Algebraic variables and equations ride along
+without being declared: any time-indexed variable the replicated equations
+reference that is not a declared state or control gets a segment copy, and
+every active time-indexed constraint not declared as something else (and not
+a discretization artifact) is replicated at the interior points plus the
+endpoint, which pins the algebraic values the equilibrium references at
+``tau = 1``.
 """
 import math
+from itertools import product
 
+from pyomo.common.collections import ComponentSet
 from pyomo.common.config import ConfigDict, ConfigValue, PositiveInt
 from pyomo.common.dependencies import numpy, numpy_available
 from pyomo.core import (
@@ -60,6 +71,34 @@ def _is_derivative(node):
     """Return whether ``node`` is a DerivativeVar member."""
     parent = getattr(node, "parent_component", lambda: None)()
     return isinstance(parent, DerivativeVar)
+
+
+def _time_index(comp, time):
+    """Return ``(position, subsets)`` of the time set in ``comp``'s index.
+
+    ``position`` is None when ``comp`` is not indexed by ``time``.
+    """
+    subs = list(comp.index_set().subsets())
+    for n, s in enumerate(subs):
+        if s is time:
+            return n, subs
+    return None, subs
+
+
+def _split_index(idx, pos, nsub):
+    """Split a member index into (other-coordinates, time-coordinate)."""
+    if nsub == 1:
+        return (), idx
+    idx = tuple(idx)
+    return idx[:pos] + idx[pos + 1 :], idx[pos]
+
+
+def _join_index(other, t, pos):
+    """Rebuild a member index from other-coordinates and a time coordinate."""
+    if not other:
+        return t
+    other = tuple(other)
+    return other[:pos] + (t,) + other[pos:]
 
 
 @TransformationFactory.register(
@@ -192,25 +231,140 @@ class InfiniteHorizonTransformation(Transformation):
                 "drto.infinite_horizon before drto.parameterize (it "
                 "replicates the controls in their original time indexing)."
             )
-        for comp in states + controls:
+        for comp in controls:
             if comp.index_set() is not time:
                 raise ValueError(
-                    f"drto: infinite_horizon supports states and controls "
-                    f"indexed by the declared time set only; "
-                    f"'{comp.name}' is not."
+                    f"drto: infinite_horizon supports controls indexed by "
+                    f"the declared time set only; '{comp.name}' is not."
+                )
+        for comp in states:
+            pos, _ = _time_index(comp, time)
+            if pos is None:
+                raise ValueError(
+                    f"drto: state '{comp.name}' is not indexed by the "
+                    f"declared time set."
                 )
 
+        states_set = ComponentSet(states)
+        controls_set = ComponentSet(controls)
+
+        # --- index layout helpers -------------------------------------
+        layout = {}
+
+        def _layout(comp):
+            if comp not in layout:
+                pos, subs = _time_index(comp, time)
+                layout[comp] = (pos, [s for n, s in enumerate(subs) if n != pos])
+            return layout[comp]
+
+        def _combos(comp):
+            _, others = _layout(comp)
+            return list(product(*others)) if others else [()]
+
+        def _member(comp, o, t):
+            pos, _ = _layout(comp)
+            return comp[_join_index(o, t, pos)]
+
+        def _representatives(con):
+            """One member per other-combo: ``{other: (t_rep, condata)}``."""
+            pos, subs = _time_index(con, time)
+            reps = {}
+            for idx, cd in con.items():
+                o, t = _split_index(idx, pos, len(subs))
+                if o not in reps:
+                    reps[o] = (t, cd)
+            return reps
+
+        # --- discovery: algebraic constraints are every active
+        # time-indexed constraint not declared as something else and not a
+        # discretization artifact; algebraic variables are every
+        # time-indexed variable the replicated equations reference that is
+        # not a declared state or control ------------------------------
+        declared_cons = ComponentSet()
+        for kind in (
+            "dynamics",
+            "tracking_stage_cost",
+            "economic_stage_cost",
+            "tracking_terminal_cost",
+            "initial_condition",
+            "terminal_constraint",
+        ):
+            declared_cons.update(reg.components(kind))
+        alg_cons = []
+        for con in model.component_objects(Constraint, active=True):
+            if con in declared_cons or "_disc_" in con.local_name:
+                continue
+            pos, _ = _time_index(con, time)
+            if pos is None:
+                continue
+            alg_cons.append(con)
+
+        algebraic = ComponentSet()
+
+        def _scan(expr, t_rep, where):
+            """Validate a template; collect the algebraic components."""
+            for v in identify_variables(expr, include_fixed=True):
+                comp = v.parent_component()
+                if isinstance(comp, DerivativeVar):
+                    raise ValueError(
+                        f"drto: infinite_horizon cannot replicate "
+                        f"'{where}': it references the derivative "
+                        f"'{v.name}' outside its own dynamics equation."
+                    )
+                pos, subs = _time_index(comp, time)
+                if pos is None:
+                    continue  # time-invariant: shared with the segment as-is
+                _, t = _split_index(v.index(), pos, len(subs))
+                if t != t_rep:
+                    raise ValueError(
+                        f"drto: infinite_horizon cannot replicate "
+                        f"'{where}': it references '{v.name}' away from "
+                        f"the constraint's own time point."
+                    )
+                if comp not in states_set and comp not in controls_set:
+                    algebraic.add(comp)
+
+        dyn_reps = {}
+        for con in dynamics:
+            entries = {}
+            for o, (t_rep, cd) in _representatives(con).items():
+                deriv_side, rhs = _side_matching(
+                    cd, _is_derivative, "infinite_horizon", "a DerivativeVar"
+                )
+                z = deriv_side.parent_component().get_state_var()
+                zpos, zsubs = _time_index(z, time)
+                zo, _ = _split_index(deriv_side.index(), zpos, len(zsubs))
+                _scan(rhs, t_rep, cd.name)
+                entries[o] = (z, zo, rhs, t_rep)
+            dyn_reps[con] = entries
+
+        alg_reps = {}
+        for con in alg_cons:
+            entries = {}
+            for o, (t_rep, cd) in _representatives(con).items():
+                _scan(cd.expr, t_rep, cd.name)
+                entries[o] = (cd.expr, t_rep)
+            alg_reps[con] = entries
+
+        cd = next(iter(stage_con.values())) if stage_con.is_indexed() else stage_con
+        t_rep_cost = cd.index()
+        cost_side, psi = _side_matching(
+            cd, _is_var_member, "infinite_horizon", "the cost variable"
+        )
+        _scan(psi, t_rep_cost, cd.name)
+        cost_var = cost_side.parent_component()
+
+        # --- the segment block ----------------------------------------
         b = Block(concrete=True)
         model.add_component(_BLOCK_NAME, b)
         b.tau = ContinuousSet(bounds=(0, 1))
         b.gamma = Param(initialize=1.0, mutable=True)
         b.beta = Param(initialize=config.beta, mutable=True)
 
-        # --- segment copies of the declared states and controls ---
         seg = {}
-        for comp in states + controls:
-            first = next(iter(comp.values()))
-            v = Var(b.tau, bounds=first.bounds, initialize=comp[t_end].value)
+        for comp in list(states) + list(controls) + list(algebraic):
+            _, others = _layout(comp)
+            v = Var(*others, b.tau) if others else Var(b.tau)
             b.add_component(comp.local_name, v)
             seg[comp] = v
         derivs = {}
@@ -219,64 +373,72 @@ class InfiniteHorizonTransformation(Transformation):
             b.add_component(z.local_name + "_dtau", dv)
             derivs[z] = dv
 
-        def substituted(template, t_rep, s):
-            """The template expression with model vars at ``t_rep`` swapped
-            for segment vars at ``s``."""
-            emap = {id(comp[t_rep]): seg[comp][s] for comp in states + controls}
-            return replace_expressions(template, emap)
+        def _seg_at(comp, o, s):
+            v = seg[comp]
+            return v[tuple(o) + (s,)] if o else v[s]
 
-        def check_template(expr, t_rep, where):
-            """v1 scope: the replicated expression may reference only
-            declared states and controls, at the representative time."""
-            for v in identify_variables(expr, include_fixed=True):
-                comp = v.parent_component()
-                if comp not in states and comp not in controls:
-                    raise ValueError(
-                        f"drto: infinite_horizon cannot replicate "
-                        f"'{where}': it references '{v.name}', which is "
-                        f"not a declared state or control."
-                    )
-                if v.index() != t_rep:
-                    raise ValueError(
-                        f"drto: infinite_horizon cannot replicate "
-                        f"'{where}': it references '{v.name}' away from "
-                        f"the constraint's own time point."
-                    )
+        def _emap(t_rep, s, u_point=None):
+            """Model members at ``t_rep`` mapped to segment members at
+            ``s`` (controls at ``u_point`` when given)."""
+            mmap = {}
+            for comp in seg:
+                pt = (
+                    u_point
+                    if (u_point is not None and comp in controls_set)
+                    else s
+                )
+                for o in _combos(comp):
+                    mmap[id(_member(comp, o, t_rep))] = _seg_at(comp, o, pt)
+            return mmap
 
         # --- dilated dynamics at interior collocation points (eq. 25) ---
-        rhs_templates = []
         for con in dynamics:
-            cd = next(iter(con.values())) if con.is_indexed() else con
-            t_rep = cd.index()
-            deriv_side, rhs = _side_matching(
-                cd, _is_derivative, "infinite_horizon", "a DerivativeVar"
-            )
-            z = deriv_side.parent_component().get_state_var()
-            check_template(rhs, t_rep, cd.name)
-            rhs_templates.append((con, z, rhs, t_rep))
+            pos, subs = _time_index(con, time)
+            others = [s_ for n, s_ in enumerate(subs) if n != pos]
 
-            def dyn_rule(blk, s, _z=z, _rhs=rhs, _t=t_rep):
-                if s in blk.tau.get_finite_elements():
+            def dyn_rule(blk, *idx, _entries=dyn_reps[con]):
+                s = idx[-1]
+                o = tuple(idx[:-1])
+                if s in blk.tau.get_finite_elements() or o not in _entries:
                     return Constraint.Skip
-                return blk.gamma * (1 - s**2) * derivs[_z][s] == substituted(
-                    _rhs, _t, s
+                z, zo, rhs, t_rep = _entries[o]
+                dv = derivs[z]
+                deriv = dv[tuple(zo) + (s,)] if zo else dv[s]
+                return blk.gamma * (1 - s**2) * deriv == replace_expressions(
+                    rhs, _emap(t_rep, s)
                 )
 
-            b.add_component(con.local_name, Constraint(b.tau, rule=dyn_rule))
+            b.add_component(con.local_name, Constraint(*others, b.tau, rule=dyn_rule))
 
-        # --- the tracking stage cost, replicated (the tail integrand) ---
-        cd = next(iter(stage_con.values())) if stage_con.is_indexed() else stage_con
-        t_rep_cost = cd.index()
-        cost_side, psi = _side_matching(
-            cd, _is_var_member, "infinite_horizon", "the cost variable"
-        )
-        check_template(psi, t_rep_cost, cd.name)
-        cost_var = cost_side.parent_component()
+        # --- algebraic equations, replicated as written at the interior
+        # points plus the endpoint (they pin the algebraic values the
+        # equilibrium references at tau = 1); no boundary values ---------
+        for con in alg_cons:
+            pos, subs = _time_index(con, time)
+            others = [s_ for n, s_ in enumerate(subs) if n != pos]
 
-        # --- link the segment to the end of the horizon ---
+            def alg_rule(blk, *idx, _entries=alg_reps[con]):
+                s = idx[-1]
+                o = tuple(idx[:-1])
+                fe_pts = blk.tau.get_finite_elements()
+                if (s in fe_pts and s != fe_pts[-1]) or o not in _entries:
+                    return Constraint.Skip
+                expr, t_rep = _entries[o]
+                return replace_expressions(expr, _emap(t_rep, s))
+
+            b.add_component(con.local_name, Constraint(*others, b.tau, rule=alg_rule))
+
+        # --- link the segment to the end of the horizon ------------------
         for z in states:
+            pos, others = _layout(z)
+
+            def link_rule(blk, *o, _z=z):
+                o = tuple(v for v in o if v is not None)  # scalar rules get None
+                return _seg_at(_z, o, 0) == _member(_z, o, t_end)
+
             b.add_component(
-                z.local_name + "_link", Constraint(expr=seg[z][0] == z[t_end])
+                z.local_name + "_link",
+                Constraint(*others, rule=link_rule) if others else Constraint(rule=link_rule),
             )
 
         # --- discretize the segment: Gauss-Legendre only, no collocation
@@ -299,6 +461,16 @@ class InfiniteHorizonTransformation(Transformation):
                 ) from None
         b.gamma.set_value(gamma_val)
 
+        # --- per-member bounds and initial values from the horizon end ---
+        for comp in seg:
+            for o in _combos(comp):
+                src = _member(comp, o, t_end)
+                for s in sorted(b.tau):
+                    v = _seg_at(comp, o, s)
+                    v.setlb(src.lb)
+                    v.setub(src.ub)
+                    v.set_value(src.value)
+
         # --- the tracking stage cost, replicated as named Expressions at the
         # interior collocation points: the tail integrand. Expressions add no
         # variables and no constraints (a replicated cost Var would sit on an
@@ -308,25 +480,32 @@ class InfiniteHorizonTransformation(Transformation):
         fe = b.tau.get_finite_elements()
         interior_pts = [p for p in pts if p not in fe]
         seg_cost = Expression(
-            interior_pts, rule=lambda blk, s: substituted(psi, t_rep_cost, s)
+            interior_pts,
+            rule=lambda blk, s: replace_expressions(psi, _emap(t_rep_cost, s)),
         )
         b.add_component(cost_var.local_name, seg_cost)
 
         # --- hard equilibrium endpoint, 0 = f at tau = 1 (eq. 21c). The
-        # state values at tau = 1 come from the Legendre extrapolation; the
-        # control values come from the segment profile: the polynomial's
+        # state values at tau = 1 come from the Legendre extrapolation, the
+        # algebraic values from the replicated equations at the endpoint,
+        # and the control values from the segment profile: the polynomial's
         # endpoint for 'collocation', the last element's constant for
         # 'piecewise_constant' ---
         u_point = 1 if config.profile == "collocation" else fe[-2]
-        for con, z, rhs, t_rep in rhs_templates:
-            emap = {}
-            for comp in states:
-                emap[id(comp[t_rep])] = seg[comp][1]
-            for comp in controls:
-                emap[id(comp[t_rep])] = seg[comp][u_point]
+        for con in dynamics:
+            pos, subs = _time_index(con, time)
+            others = [s_ for n, s_ in enumerate(subs) if n != pos]
+
+            def eq_rule(blk, *o, _entries=dyn_reps[con]):
+                o = tuple(v for v in o if v is not None)  # scalar rules get None
+                if o not in _entries:
+                    return Constraint.Skip
+                _, _, rhs, t_rep = _entries[o]
+                return 0 == replace_expressions(rhs, _emap(t_rep, 1, u_point=u_point))
+
             b.add_component(
                 con.local_name + "_equilibrium",
-                Constraint(expr=0 == replace_expressions(rhs, emap)),
+                Constraint(*others, rule=eq_rule) if others else Constraint(rule=eq_rule),
             )
 
         # --- segment control profiles: applied now, so raw unparameterized
@@ -366,6 +545,11 @@ class InfiniteHorizonTransformation(Transformation):
             gamma=round(gamma_val, 8),
             profile=config.profile,
             horizon="kept, infinite tail appended",
+            **(
+                {"algebraic": f"{len(algebraic)} components replicated"}
+                if algebraic
+                else {}
+            ),
             **(
                 {"terminal_cost": f"{terminal} deactivated (the tail owns it)"}
                 if terminal

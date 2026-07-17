@@ -159,6 +159,10 @@ declarations rather than re-deriving them.
   (feature 003) and the sampling time `dt`, so `horizon` errors if the
   set is already discretized (Pyomo itself enforces the two-point minimum
   at construction).
+- States may be indexed by time alone or by time plus other sets (a tray
+  composition x(tray, comp, t)); the validations that reference a specific
+  time point (the initial condition's t0, the terminal constraint's tN) find
+  the time coordinate inside the member's index.
 - `state(m.z, ...)` tags one or more state Vars. A state carries a
   `DerivativeVar` for its dynamics only in a dynamic model, so a steady-state
   model's states need not have one and `state` does not require it.

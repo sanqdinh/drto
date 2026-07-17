@@ -115,6 +115,17 @@ move.
   the dilated dynamics and both in the tail weights, never baked in as
   numbers, so `set_value` retunes either between solves with the dynamics and
   the objective staying consistent, no re-apply needed.
+- States may carry index sets besides time: segment copies, linking,
+  equilibrium, and replication run per member. Controls stay indexed by time
+  alone.
+- Algebraic variables and equations ride along without being declared. Any
+  time-indexed variable referenced by the replicated equations that is not a
+  declared state or control gets a segment copy, and every active
+  time-indexed constraint that is not declared as something else and is not
+  a discretization artifact is replicated on the segment at the interior
+  collocation points and the endpoint, which is what pins the algebraic
+  values the equilibrium ``0 = f`` references at ``tau = 1``. Algebraic
+  copies get no element-boundary values and no linking.
 - A declared tracking terminal cost is deactivated on application: the tail
   integral is the cost-to-go, so V_f would double-count. The deactivation is
   noted in the transformation outcome.

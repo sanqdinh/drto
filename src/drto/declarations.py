@@ -255,6 +255,21 @@ def _side_matching(condata, predicate, fn, expected):
     raise ValueError(f"drto: {fn}: neither side of '{condata.name}' is {expected}.")
 
 
+def _time_coord(vardata, time):
+    """Return the time coordinate of a Var member, or None.
+
+    Handles states indexed by time alone (the index is the coordinate) and
+    by time plus other sets (the coordinate sits inside the index tuple at
+    the time set's position).
+    """
+    subs = list(vardata.parent_component().index_set().subsets())
+    for n, s in enumerate(subs):
+        if s is time:
+            idx = vardata.index()
+            return idx if len(subs) == 1 else tuple(idx)[n]
+    return None
+
+
 def _members(con):
     """Yield the ConstraintData members of a scalar or indexed Constraint."""
     if con.is_indexed():
@@ -552,7 +567,7 @@ def _register_initial_condition(components):
                 fn,
                 "a declared state",
             )
-            if state_side.index() != t0:
+            if _time_coord(state_side, time) != t0:
                 raise ValueError(
                     f"drto: {fn}: '{cd.name}' anchors "
                     f"'{state_side.name}', which is not at the first time "
@@ -588,7 +603,7 @@ def terminal_constraint(*args, **kwargs):
         tN = time.last()
         for cd in _members(component):
             for v in identify_variables(cd.body, include_fixed=True):
-                if not _declared_in(v.parent_component(), states) or v.index() != tN:
+                if not _declared_in(v.parent_component(), states) or _time_coord(v, time) != tN:
                     raise ValueError(
                         f"drto: {fn}: '{cd.name}' references '{v.name}'; a "
                         f"terminal constraint may reference only declared states "

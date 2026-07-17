@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- `drto.infinite_horizon` handles states with extra index sets and DAE
+  models: algebraic variables and equations are discovered structurally
+  (no declaration) and replicated on the segment.
+- The initial-condition and terminal-constraint validations handle states
+  indexed by time plus other sets.
 - `drto.infinite_horizon` deactivates a declared tracking terminal cost:
   the tail integral is the cost-to-go, so V_f would double-count. Recorded
   in the transformation outcome.
