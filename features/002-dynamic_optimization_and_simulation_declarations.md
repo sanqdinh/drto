@@ -57,31 +57,29 @@ is written, with the constraint-role declarations as decorators.
 ```python
 import pyomo.environ as pyo
 from pyomo.dae import ContinuousSet, DerivativeVar
-from drto import (horizon, state, control, continuous_dynamics,
-                  tracking_stage_cost, initial_condition,
-                  steady_state, steady_state_control)
+import drto
 
 m = pyo.ConcreteModel()
-m.t = horizon(ContinuousSet(initialize=range(11)))  # the sample grid, dt = 1
-m.z = state(pyo.Var(m.t))
+m.t = drto.horizon(ContinuousSet(initialize=range(11)))  # the sample grid, dt = 1
+m.z = drto.state(pyo.Var(m.t))
 m.dzdt = DerivativeVar(m.z, wrt=m.t)
-m.u = control(pyo.Var(m.t, bounds=(0, 1)), profile="piecewise_constant")
+m.u = drto.control(pyo.Var(m.t, bounds=(0, 1)), profile="piecewise_constant")
 
-m.z_ss = steady_state(m.z, pyo.Param(initialize=0.5, mutable=True))
-m.u_ss = steady_state_control(m.u, pyo.Param(initialize=0.3, mutable=True))
+m.z_ss = drto.steady_state(m.z, pyo.Param(initialize=0.5, mutable=True))
+m.u_ss = drto.steady_state_control(m.u, pyo.Param(initialize=0.3, mutable=True))
 m.z_hat = pyo.Param(initialize=0.4, mutable=True)  # state feedback hook
 
 m.cost = pyo.Var(m.t)
 
-@continuous_dynamics(m, m.t)
+@drto.continuous_dynamics(m, m.t)
 def ode(m, t):
     return m.dzdt[t] == -m.z[t] + m.u[t]
 
-@tracking_stage_cost(m, sorted(m.t)[:-1])  # the terminal cost owns the final time
+@drto.tracking_stage_cost(m, sorted(m.t)[:-1])  # the terminal cost owns the final time
 def stage(m, t):
     return m.cost[t] == 10*(m.z[t] - m.z_ss)**2 + (m.u[t] - m.u_ss)**2
 
-@initial_condition(m)
+@drto.initial_condition(m)
 def init(m):
     return m.z[0] == m.z_hat
 ```
