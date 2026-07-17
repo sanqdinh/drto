@@ -25,11 +25,19 @@ m.z_ss = pyo.Param(initialize=0.5, mutable=True)   # tracking targets
 m.u_ss = pyo.Param(initialize=0.3, mutable=True)
 m.z_hat = pyo.Param(initialize=0.4, mutable=True)  # state feedback hook
 
-m.ode = pyo.Constraint(m.t, rule=lambda m, t: m.dzdt[t] == -m.z[t] + m.u[t])
 m.cost = pyo.Var(m.t)
-m.stage = pyo.Constraint(m.t, rule=lambda m, t:
-    m.cost[t] == 10*(m.z[t] - m.z_ss)**2 + (m.u[t] - m.u_ss)**2)
-m.init = pyo.Constraint(expr=m.z[0] == m.z_hat)
+
+@m.Constraint(m.t)
+def ode(m, t):
+    return m.dzdt[t] == -m.z[t] + m.u[t]
+
+@m.Constraint(m.t)
+def stage(m, t):
+    return m.cost[t] == 10*(m.z[t] - m.z_ss)**2 + (m.u[t] - m.u_ss)**2
+
+@m.Constraint()
+def init(m):
+    return m.z[0] == m.z_hat
 
 drto.declare_time(m.t)
 drto.declare_state(m.z)
