@@ -158,6 +158,14 @@ what separates it from a path constraint. The objective is drto's own: it
 sums the declared cost terms that are live in the current mode, so a mode
 drops a term just by leaving out its constraint.
 
+One modeling practice worth following: leave cost variables unbounded. The
+defining equality already fixes each cost value (a sum of squares is
+nonnegative without being told), and a `NonNegativeReals` bound puts the
+optimum exactly on the bound wherever the cost vanishes, at settled samples
+on long horizons or through an infinite-horizon tail at equilibrium, which
+drags interior-point solvers (measured on the Hicks example at N = 50: 43
+ipopt iterations bounded, 6 unbounded, identical solutions).
+
 One thing you never declare, because it already lives in the model: the
 **path constraints** are the state variables' own upper and lower bounds.
 

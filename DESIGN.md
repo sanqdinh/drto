@@ -214,6 +214,15 @@ against Pyomo 6.10):
   a stable read and a misplaced scalar (a non-Var LHS) is detectable and
   rejected. For a cost the scalar is the cost-term Var drto puts in the
   objective; for the initial condition it is the anchored state at t0.
+- Cost variables are left UNBOUNDED (USER DECISION 2026-07-17, best
+  practice recorded after measurement). The defining equality fixes the
+  value, so a `NonNegativeReals` bound adds no information, and it places
+  the optimum exactly on the bound wherever the cost vanishes: settled
+  samples on a long horizon, a quadrature state through a tail at
+  equilibrium. Interior-point solvers drag badly there (Hicks, N = 50:
+  43 iterations bounded vs 6 unbounded, identical solutions; the
+  hand-built phi variant hit 82). Same mechanism as the earlier
+  segment-copy finding that moved the tail integrand to Expressions.
 
 The objective is drto's, not the user's: it assembles `min` over the
 declared cost-term Vars that are live in the current mode, summing a stage

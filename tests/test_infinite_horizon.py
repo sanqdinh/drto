@@ -50,7 +50,7 @@ def hicks(n_samples):
     m.dzt = DerivativeVar(m.zt, wrt=m.t)
     m.v1 = pyo.Var(m.t, bounds=(0.166666666666667, 1), initialize=0.57828)
     m.v2 = pyo.Var(m.t, bounds=(0.025, 1), initialize=0.49989)
-    m.cost = pyo.Var(m.t, within=pyo.NonNegativeReals)
+    m.cost = pyo.Var(m.t)  # unbounded: a cost var pinned at a bound drags ipopt
 
     @m.Constraint(m.t)
     def zc_ode(m, t):
