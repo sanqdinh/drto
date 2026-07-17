@@ -8,5 +8,6 @@ transformations and results rather than construction.
 """
 from models.first_order import first_order
 from models.hicks import hicks
+from models.quad_tank import quad_tank
 
-__all__ = ["first_order", "hicks"]
+__all__ = ["first_order", "hicks", "quad_tank"]

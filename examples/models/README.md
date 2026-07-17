@@ -35,6 +35,7 @@ Every model here follows these, and new models should too:
 | --- | --- | --- |
 | `hicks.py` | `hicks(N=5, h=1)` | Hicks-Ray CSTR (Hicks & Ray 1971), the canonical nonlinear example: two states, two controls, exothermic reaction. |
 | `first_order.py` | `first_order(N=10, h=1)` | First-order linear system, the minimal example from the feature 002 spec. |
+| `quad_tank.py` | `quad_tank(N=15, h=10)` | Johansson's quadruple tank (IEEE TCST 2000), nonminimum-phase configuration: four levels, two pumps with crossed splits. |
 
 From a notebook in `examples/`:
 
