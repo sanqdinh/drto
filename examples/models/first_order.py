@@ -37,7 +37,9 @@ def first_order(N=10, h=1):
     m.z = pyo.Var(m.t, initialize=0.4)
     m.dzdt = DerivativeVar(m.z, wrt=m.t)
     m.u = pyo.Var(m.t, bounds=(0, 1), initialize=0.5)
-    m.cost = pyo.Var(m.t)  # unbounded: a cost var pinned at a bound drags ipopt
+    # unbounded cost vars: a cost var pinned at a bound drags ipopt
+    m.cost = pyo.Var(m.t)
+    m.term = pyo.Var()
 
     @m.Constraint(m.t)
     def ode(m, t):
@@ -48,6 +50,12 @@ def first_order(N=10, h=1):
     def stage(m, t):
         return m.cost[t] == 10 * (m.z[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
 
+    tN = m.t.last()
+
+    @m.Constraint()  # the stage cost with the control removed, at tN
+    def terminal(m):
+        return m.term == 10 * (m.z[tN] - m.z_ss) ** 2
+
     @m.Constraint()
     def init(m):
         return m.z[0] == m.z_hat
@@ -57,6 +65,7 @@ def first_order(N=10, h=1):
     drto.dynamics(m.ode)
     drto.control(m.u, profile="piecewise_constant")
     drto.tracking_stage_cost(m.stage)
+    drto.tracking_terminal_cost(m.terminal)
     drto.initial_condition(m.init)
     drto.steady_state(m.z, m.z_ss)
     drto.steady_state_control(m.u, m.u_ss)

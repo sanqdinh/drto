@@ -53,7 +53,9 @@ def hicks(N=5, h=1):
     m.dzt = DerivativeVar(m.zt, wrt=m.t)
     m.v1 = pyo.Var(m.t, bounds=(0.166666666666667, 1), initialize=0.57828)
     m.v2 = pyo.Var(m.t, bounds=(0.025, 1), initialize=0.49989)
-    m.cost = pyo.Var(m.t)  # unbounded: a cost var pinned at a bound drags ipopt
+    # unbounded cost vars: a cost var pinned at a bound drags ipopt
+    m.cost = pyo.Var(m.t)
+    m.term = pyo.Var()
 
     @m.Constraint(m.t)
     def zc_ode(m, t):
@@ -78,6 +80,14 @@ def hicks(N=5, h=1):
             + 0.5 * (m.v2[t] - m.v2_ss) ** 2
         )
 
+    tN = m.t.last()
+
+    @m.Constraint()  # the stage cost with the controls removed, at tN
+    def terminal(m):
+        return m.term == (
+            10 * (m.zc[tN] - m.zc_ss) ** 2 + 2 * (m.zt[tN] - m.zt_ss) ** 2
+        )
+
     @m.Constraint()
     def zc_init(m):
         return m.zc[0] == m.zc_hat
@@ -91,6 +101,7 @@ def hicks(N=5, h=1):
     drto.dynamics(m.zc_ode, m.zt_ode)
     drto.control(m.v1, m.v2, profile="piecewise_constant")
     drto.tracking_stage_cost(m.stage)
+    drto.tracking_terminal_cost(m.terminal)
     drto.initial_condition(m.zc_init, m.zt_init)
     drto.steady_state(m.zc, m.zc_ss)
     drto.steady_state(m.zt, m.zt_ss)

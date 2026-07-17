@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- `drto.infinite_horizon` deactivates a declared tracking terminal cost:
+  the tail integral is the cost-to-go, so V_f would double-count. Recorded
+  in the transformation outcome.
+- The example models (`examples/models/`) include a tracking terminal cost:
+  the stage cost with the controls removed, at the final time.
+
 ## [0.1.0] - 2026-07-17
 
 ### Added
