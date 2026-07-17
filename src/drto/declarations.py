@@ -603,7 +603,10 @@ def terminal_constraint(*args, **kwargs):
         tN = time.last()
         for cd in _members(component):
             for v in identify_variables(cd.body, include_fixed=True):
-                if not _declared_in(v.parent_component(), states) or _time_coord(v, time) != tN:
+                if (
+                    not _declared_in(v.parent_component(), states)
+                    or _time_coord(v, time) != tN
+                ):
                     raise ValueError(
                         f"drto: {fn}: '{cd.name}' references '{v.name}'; a "
                         f"terminal constraint may reference only declared states "

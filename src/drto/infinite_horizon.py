@@ -382,11 +382,7 @@ class InfiniteHorizonTransformation(Transformation):
             ``s`` (controls at ``u_point`` when given)."""
             mmap = {}
             for comp in seg:
-                pt = (
-                    u_point
-                    if (u_point is not None and comp in controls_set)
-                    else s
-                )
+                pt = u_point if (u_point is not None and comp in controls_set) else s
                 for o in _combos(comp):
                     mmap[id(_member(comp, o, t_rep))] = _seg_at(comp, o, pt)
             return mmap
@@ -438,7 +434,11 @@ class InfiniteHorizonTransformation(Transformation):
 
             b.add_component(
                 z.local_name + "_link",
-                Constraint(*others, rule=link_rule) if others else Constraint(rule=link_rule),
+                (
+                    Constraint(*others, rule=link_rule)
+                    if others
+                    else Constraint(rule=link_rule)
+                ),
             )
 
         # --- discretize the segment: Gauss-Legendre only, no collocation
@@ -505,7 +505,11 @@ class InfiniteHorizonTransformation(Transformation):
 
             b.add_component(
                 con.local_name + "_equilibrium",
-                Constraint(*others, rule=eq_rule) if others else Constraint(rule=eq_rule),
+                (
+                    Constraint(*others, rule=eq_rule)
+                    if others
+                    else Constraint(rule=eq_rule)
+                ),
             )
 
         # --- segment control profiles: applied now, so raw unparameterized

@@ -300,7 +300,10 @@ def indexed_model():
 
     @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
     def stage(m, t):
-        return m.cost[t] == sum((m.x[i, t] - m.x_ss[i]) ** 2 for i in m.i) + (m.u[t] - m.u_ss) ** 2
+        return (
+            m.cost[t]
+            == sum((m.x[i, t] - m.x_ss[i]) ** 2 for i in m.i) + (m.u[t] - m.u_ss) ** 2
+        )
 
     @m.Constraint(m.i)
     def init(m, i):
@@ -340,7 +343,10 @@ def dae_model():
 
     @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
     def stage(m, t):
-        return m.cost[t] == (m.z[t] - m.z_ss) ** 2 + (m.w[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
+        return (
+            m.cost[t]
+            == (m.z[t] - m.z_ss) ** 2 + (m.w[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
+        )
 
     @m.Constraint()
     def init(m):
@@ -360,7 +366,9 @@ def dae_model():
 
 def test_indexed_state_segment_structure():
     m = indexed_model()
-    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory("dae.collocation").apply_to(
+        m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
+    )
     pyo.TransformationFactory(IH).apply_to(m)
     b = m.drto_infinite_horizon
     ntau = len(sorted(b.tau))
@@ -373,7 +381,9 @@ def test_indexed_state_segment_structure():
 @needs_ipopt
 def test_indexed_state_reaches_the_fixed_point():
     m = indexed_model()
-    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory("dae.collocation").apply_to(
+        m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
+    )
     pyo.TransformationFactory(IH).apply_to(m)
     pyo.TransformationFactory("drto.parameterize").apply_to(m)
     drto.build_objective(m)
@@ -386,7 +396,9 @@ def test_indexed_state_reaches_the_fixed_point():
 
 def test_algebraic_variables_are_discovered_and_replicated():
     m = dae_model()
-    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory("dae.collocation").apply_to(
+        m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
+    )
     pyo.TransformationFactory(IH).apply_to(m)
     b = m.drto_infinite_horizon
     # the algebraic copy exists without a declaration
@@ -402,7 +414,9 @@ def test_algebraic_variables_are_discovered_and_replicated():
 @needs_ipopt
 def test_algebraic_model_reaches_the_fixed_point():
     m = dae_model()
-    pyo.TransformationFactory("dae.collocation").apply_to(m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU")
+    pyo.TransformationFactory("dae.collocation").apply_to(
+        m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
+    )
     pyo.TransformationFactory(IH).apply_to(m)
     pyo.TransformationFactory("drto.parameterize").apply_to(m)
     drto.build_objective(m)
