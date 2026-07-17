@@ -198,6 +198,30 @@ def test_gamma_follows_the_mesh_rule_and_option_overrides():
         pyo.TransformationFactory(IH).apply_to(m4, gamma="fast")
 
 
+def test_declared_terminal_cost_is_deactivated():
+    m = declared_model()
+    m.term = pyo.Var()
+    tN = m.t.last()
+
+    @m.Constraint()
+    def terminal(m):
+        return m.term == 10 * (m.z[tN] - m.z_ss) ** 2
+
+    drto.tracking_terminal_cost(m.terminal)
+    pyo.TransformationFactory("dae.collocation").apply_to(
+        m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
+    )
+    pyo.TransformationFactory(IH).apply_to(m)
+    # the tail owns the cost-to-go: V_f would double-count
+    assert not m.terminal.active
+    obj = drto.build_objective(m)
+    from pyomo.core.expr import identify_variables
+
+    assert not any(v is m.term for v in identify_variables(obj.expr))
+    (ih_rec,) = [r for r in drto.info(m).transformations if r["name"] == IH]
+    assert "deactivated" in ih_rec["outcome"]["terminal_cost"]
+
+
 def test_tail_terms_reach_the_objective():
     m = ready_model()
     pyo.TransformationFactory(IH).apply_to(m)

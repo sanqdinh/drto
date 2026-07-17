@@ -350,6 +350,15 @@ class InfiniteHorizonTransformation(Transformation):
                 terms.append((seg_cost[p], weight))
         reg.record_declaration("cost_group", b, terms=tuple(terms))
 
+        # the tail integral IS the cost-to-go, so a declared terminal cost
+        # would double-count: deactivate it (build_objective's liveness rule
+        # then drops its term) and record the outcome
+        terminal = None
+        for comp in reg.components("tracking_terminal_cost"):
+            if comp.active:
+                comp.deactivate()
+                terminal = comp.name
+
         reg.record_transformation(
             "drto.infinite_horizon",
             segment=f"{config.nfe} elements x {config.ncp} Legendre points",
@@ -357,4 +366,9 @@ class InfiniteHorizonTransformation(Transformation):
             gamma=round(gamma_val, 8),
             profile=config.profile,
             horizon="kept, infinite tail appended",
+            **(
+                {"terminal_cost": f"{terminal} deactivated (the tail owns it)"}
+                if terminal
+                else {}
+            ),
         )

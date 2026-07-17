@@ -115,6 +115,9 @@ move.
   the dilated dynamics and both in the tail weights, never baked in as
   numbers, so `set_value` retunes either between solves with the dynamics and
   the objective staying consistent, no re-apply needed.
+- A declared tracking terminal cost is deactivated on application: the tail
+  integral is the cost-to-go, so V_f would double-count. The deactivation is
+  noted in the transformation outcome.
 - The transform records what it added in `drto.info` (feature 001). There is
   no coupling option on the mode transforms: the tail terms it registers are
   live cost terms, so `drto.build_objective` includes them wherever it runs,
