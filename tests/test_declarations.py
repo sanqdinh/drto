@@ -28,6 +28,8 @@ def base_model():
 
     @m.Constraint(m.t)
     def stage(m, t):
+        if t == m.t.last():
+            return pyo.Constraint.Skip  # the terminal cost owns the final time
         return m.cost[t] == 10 * (m.z[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
 
     @m.Constraint()
@@ -74,11 +76,6 @@ def test_control_profile_reaches_pyomo_cvp():
     pyo.TransformationFactory("dae.collocation").apply_to(
         m, wrt=m.t, nfe=4, ncp=3, scheme="LAGRANGE-RADAU"
     )
-    # The final stage-cost member references the control at the final time,
-    # which a piecewise-constant profile has no value for; its cost term is
-    # outside build_objective's 0..N-1 sum, so the mode transforms deactivate
-    # it before parameterizing (features 006/007). Mimic that here.
-    m.stage[m.t.last()].deactivate()
     pyo.TransformationFactory("cvp.parameterize").apply_to(m)
     # piecewise constant: one free control value per finite element
     assert len(m.u) == 4
@@ -238,6 +235,8 @@ def test_stage_cost_must_be_an_equality():
 
     @m.Constraint(m.t)
     def bound(m, t):
+        if t == m.t.last():
+            return pyo.Constraint.Skip
         return m.cost[t] >= 0
 
     with pytest.raises(ValueError, match="equality"):
@@ -250,10 +249,24 @@ def test_stage_cost_needs_a_cost_variable_side():
 
     @m.Constraint(m.t)
     def no_var(m, t):
+        if t == m.t.last():
+            return pyo.Constraint.Skip
         return m.z[t] ** 2 == m.u[t] ** 2
 
     with pytest.raises(ValueError, match="cost variable"):
         drto.declare_tracking_stage_cost(m.no_var)
+
+
+def test_stage_cost_must_skip_the_final_time():
+    m = base_model()
+    drto.declare_time(m.t)
+
+    @m.Constraint(m.t)
+    def full_span(m, t):
+        return m.cost[t] == m.z[t] ** 2
+
+    with pytest.raises(ValueError, match="final time"):
+        drto.declare_tracking_stage_cost(m.full_span)
 
 
 def test_terminal_cost_must_be_scalar():

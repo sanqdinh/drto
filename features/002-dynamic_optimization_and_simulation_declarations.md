@@ -33,6 +33,8 @@ def ode(m, t):
 
 @m.Constraint(m.t)
 def stage(m, t):
+    if t == m.t.last():
+        return pyo.Constraint.Skip  # the terminal cost owns the final time
     return m.cost[t] == 10*(m.z[t] - m.z_ss)**2 + (m.u[t] - m.u_ss)**2
 
 @m.Constraint()
@@ -92,7 +94,10 @@ declarations rather than re-deriving them.
   Constraints whose left-hand sides are the DerivativeVars of declared states.
 - `declare_tracking_stage_cost(m.con)` and `declare_economic_stage_cost(m.con)`
   each tag a per-time-point equality Constraint whose left-hand side is the
-  scalar running-cost variable; the right-hand side defines the cost.
+  scalar running-cost variable; the right-hand side defines the cost. The
+  stage cost does not apply at the final time point, where only the terminal
+  cost applies, so the constraint skips the final point and a member there is
+  rejected.
 - `declare_tracking_terminal_cost(m.con)` tags an equality Constraint whose
   left-hand side is the scalar terminal-cost variable.
 - `declare_initial_condition(m.con, ...)` tags one or more equality Constraints

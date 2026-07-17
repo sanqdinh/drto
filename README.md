@@ -131,6 +131,8 @@ object types of a dynamic optimization or simulation problem:
 Conventions drto enforces on those constraints: the cost and
 initial-condition constraints are equalities whose left-hand side is the
 scalar the declaration is about (the cost term, or the anchored state); a
+stage cost applies at every time point except the final one, where only the
+terminal cost applies; a
 terminal constraint may reference only states at the final time, which is
 what separates it from a path constraint. The objective is drto's own: it
 sums the declared cost terms that are live in the current mode, so a mode

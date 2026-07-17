@@ -253,6 +253,12 @@ def _declare_stage_cost(kind, component, fn):
             f"drto: {fn}: '{component.name}' must be indexed by the declared "
             f"time set '{time.name}' (a per-time-point cost)."
         )
+    if time.last() in component:
+        raise ValueError(
+            f"drto: {fn}: '{component.name}' has a member at the final time "
+            f"point ({time.last()}). The stage cost does not apply there, "
+            f"only the terminal cost does: skip the final point."
+        )
     for cd in _members(component):
         _side_matching(
             cd, _is_var_member, fn, "the scalar cost variable (the cost term)"
