@@ -14,7 +14,22 @@ routines.
 
 ## Status
 
-Design phase: see [DESIGN.md](DESIGN.md). No code yet.
+Alpha. The registry (`drto.info`), the declaration surface, objective
+assembly, the control-profile application, and the infinite-horizon terminal
+segment (features 001-004 and 017) are implemented and tested; the mode
+transforms, initializers, and closed-loop frameworks follow. The feature
+statuses live in [`features/README.md`](features/README.md), and DESIGN.md
+remains the design record.
+
+## Install
+
+```bash
+pip install drto
+```
+
+The [pounce](https://github.com/jkitchin/pounce) solver and pyomo-pounce are
+needed for full functionality (sensitivity updates, the advanced-step
+frameworks); any NLP solver runs the open-loop modes.
 
 ## Spec-driven development
 

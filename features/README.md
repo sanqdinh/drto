@@ -6,14 +6,14 @@ implemented. A feature spec is one Markdown file, numbered in order
 
 ## Status
 
-Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready](https://img.shields.io/badge/ready-blue) &rarr; ![implemented](https://img.shields.io/badge/implemented-yellowgreen) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen)
+Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready](https://img.shields.io/badge/ready-blue) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen)
 
 | Feature | State |
 | --- | --- |
-| [001 drto.info](001-drto.info.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
-| [002 Dynamic optimization and simulation declarations](002-dynamic_optimization_and_simulation_declarations.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
-| [003 drto.build_objective](003-drto.build_objective.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
-| [004 drto.infinite_horizon](004-drto.infinite_horizon.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
+| [001 drto.info](001-drto.info.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
+| [002 Dynamic optimization and simulation declarations](002-dynamic_optimization_and_simulation_declarations.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
+| [003 drto.build_objective](003-drto.build_objective.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
+| [004 drto.infinite_horizon](004-drto.infinite_horizon.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [005 drto.dynamic_to_steady_state](005-drto.dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [006 drto.dynamic_optimization](006-drto.dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [007 drto.dynamic_simulation](007-drto.dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
@@ -26,7 +26,7 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 | [014 drto.ideal_nmpc](014-drto.ideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [015 drto.asnmpc](015-drto.asnmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [016 drto.nonideal_nmpc](016-drto.nonideal_nmpc.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
-| [017 drto.parameterize](017-drto.parameterize.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
+| [017 drto.parameterize](017-drto.parameterize.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 
 ## Template
 

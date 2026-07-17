@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-17
+
 ### Added
 
 - `drto.parameterize` (feature 017): applies the declared control profiles
@@ -63,5 +65,6 @@ All notable changes to this project are documented here. The format is based on
   declaration framework and the six modes are recorded in DESIGN.md and the
   README. No functionality yet.
 
-[Unreleased]: https://github.com/devin-griff/drto/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/devin-griff/drto/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/devin-griff/drto/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/devin-griff/drto/releases/tag/v0.0.0

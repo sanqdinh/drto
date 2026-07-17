@@ -6,6 +6,8 @@ abstract: >
   simulation, and optimization from a core Pyomo model, as well as the
   moving-horizon machinery for implementations of dynamic real-time optimization.
 type: software
+version: 0.1.0
+date-released: 2026-07-17
 license: BSD-3-Clause
 repository-code: "https://github.com/devin-griff/drto"
 url: "https://github.com/devin-griff/drto"
