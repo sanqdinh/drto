@@ -186,6 +186,12 @@ class InfiniteHorizonTransformation(Transformation):
         (stage_record,) = reg.declarations("tracking_stage_cost")
         stage_con = stage_record["component"]
 
+        if reg.has_transformation("drto.parameterize"):
+            raise ValueError(
+                "drto: the control profiles are already applied; apply "
+                "drto.infinite_horizon before drto.parameterize (it "
+                "replicates the controls in their original time indexing)."
+            )
         for comp in states + controls:
             if comp.index_set() is not time:
                 raise ValueError(

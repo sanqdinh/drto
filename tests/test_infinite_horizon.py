@@ -139,6 +139,13 @@ def test_double_application_errors():
         pyo.TransformationFactory(IH).apply_to(m)
 
 
+def test_parameterized_controls_block_application():
+    m = ready_model()
+    pyo.TransformationFactory("drto.parameterize").apply_to(m)
+    with pytest.raises(ValueError, match="before drto.parameterize"):
+        pyo.TransformationFactory(IH).apply_to(m)
+
+
 def test_assembled_objective_blocks_application():
     m = ready_model()
     drto.build_objective(m)
