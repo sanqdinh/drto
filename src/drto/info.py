@@ -277,7 +277,12 @@ def _compact_constraint(con):
             iset = getattr(ix, "_set", None)
             sets.append(f"{name} in {iset.name if iset is not None else '?'}")
         return f"{s}  for {', '.join(sets)}"
-    except (AttributeError, TypeError, KeyError, IndexError):
+    except Exception:
+        # Templatization executes the constraint rule on IndexTemplate
+        # objects, so any rule logic (Skip guards comparing indices, dict
+        # lookups, math on the index) can raise anything, and which exception
+        # varies across Pyomo versions. Every failure means the same thing
+        # here: this family cannot be templatized, show a representative.
         idx = next(iter(con.keys()))
         s = str(con[idx].expr)
         for frm, to in ((f"[{idx}]", "[k]"), (f"[{idx},", "[k,")):
