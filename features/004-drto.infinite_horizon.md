@@ -90,7 +90,8 @@ move.
   quadrature-state formulation exactly.
 - The segment controls are new variables with their own pyomo-cvp profile,
   declared by the transform and independent of the profile declared on the
-  finite-horizon controls: default `('reduced_collocation', ncp)`, the
+  finite-horizon controls: default `'collocation'` (the element's
+  collocation polynomial through all its collocation points), the
   accuracy-first class with `beta` carrying the safety margin, and
   `piecewise_constant` as the conservative option. Raw unparameterized copies
   are never left on the segment.
