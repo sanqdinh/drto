@@ -50,7 +50,9 @@ packages = ["src/drto"]
 testpaths = ["tests"]
 
 # Mirrors Pyomo's own Black settings so formatting matches upstream exactly.
+# examples/ is excluded: model equations there stay on one line, unwrapped.
 [tool.black]
 line-length = 88
 skip-string-normalization = true
 skip-magic-trailing-comma = true
+force-exclude = 'examples/'
