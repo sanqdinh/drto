@@ -31,10 +31,8 @@ m.cost = pyo.Var(m.t)
 def ode(m, t):
     return m.dzdt[t] == -m.z[t] + m.u[t]
 
-@m.Constraint(m.t)
+@m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
 def stage(m, t):
-    if t == m.t.last():
-        return pyo.Constraint.Skip  # the terminal cost owns the final time
     return m.cost[t] == 10*(m.z[t] - m.z_ss)**2 + (m.u[t] - m.u_ss)**2
 
 @m.Constraint()
@@ -100,8 +98,10 @@ declarations rather than re-deriving them.
   each tag a per-time-point equality Constraint whose left-hand side is the
   scalar running-cost variable; the right-hand side defines the cost. The
   stage cost does not apply at the final time point, where only the terminal
-  cost applies, so the constraint skips the final point and a member there is
-  rejected.
+  cost applies, so it is indexed over the sample grid minus the final point
+  (for example `sorted(m.t)[:-1]`), one member per sample: a member at the
+  final time, or a missing sample, is rejected. Indexing by a plain list also
+  keeps the discretization from expanding it beyond the samples.
 - `declare_tracking_terminal_cost(m.con)` tags an equality Constraint whose
   left-hand side is the scalar terminal-cost variable.
 - `declare_initial_condition(m.con, ...)` tags one or more equality Constraints

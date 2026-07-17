@@ -260,17 +260,16 @@ def _declare_stage_cost(kind, component, fn):
     _container(component, fn)
     _check_ctype(component, "Constraint", fn)
     reg = info(component.model())
-    time = _declared_time(reg, fn)
-    if component.index_set() is not time:
+    _declared_time(reg, fn)
+    samples = reg.declarations("time")[0]["samples"]
+    expected = list(samples[:-1])
+    members = sorted(component.keys()) if component.is_indexed() else []
+    if members != expected:
         raise ValueError(
-            f"drto: {fn}: '{component.name}' must be indexed by the declared "
-            f"time set '{time.name}' (a per-time-point cost)."
-        )
-    if time.last() in component:
-        raise ValueError(
-            f"drto: {fn}: '{component.name}' has a member at the final time "
-            f"point ({time.last()}). The stage cost does not apply there, "
-            f"only the terminal cost does: skip the final point."
+            f"drto: {fn}: '{component.name}' must have one member per sample "
+            f"point except the final one, where only the terminal cost "
+            f"applies: index it over the samples, for example "
+            f"@m.Constraint(sorted(m.t)[:-1])."
         )
     for cd in _members(component):
         _side_matching(

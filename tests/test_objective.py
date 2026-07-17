@@ -143,10 +143,8 @@ def test_both_cost_kinds_sum_together():
     m = declared_model()
     m.ecost = pyo.Var(m.t)
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])
     def econ(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip
         return m.ecost[t] == -m.u[t]
 
     drto.declare_economic_stage_cost(m.econ)

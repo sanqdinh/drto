@@ -66,10 +66,8 @@ def hicks(n_samples):
             - m.a0 * m.u1sf * m.v1[t] * (m.zt[t] - m.ztcw)
         )
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
     def stage(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip  # the terminal cost owns the final time
         return m.cost[t] == (
             10 * (m.zc[t] - m.zc_ss) ** 2
             + 2 * (m.zt[t] - m.zt_ss) ** 2
@@ -109,10 +107,8 @@ def test_economic_alone_is_rejected():
     m = base_model()
     m.ecost = pyo.Var(m.t)
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])
     def econ(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip
         return m.ecost[t] == -m.u[t]
 
     drto.declare_time(m.t)

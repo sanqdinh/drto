@@ -26,10 +26,8 @@ def base_model():
     def ode(m, t):
         return m.dzdt[t] == -m.z[t] + m.u[t]
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])  # the terminal cost owns the final time
     def stage(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip  # the terminal cost owns the final time
         return m.cost[t] == 10 * (m.z[t] - m.z_ss) ** 2 + (m.u[t] - m.u_ss) ** 2
 
     @m.Constraint()
@@ -225,7 +223,7 @@ def test_stage_cost_must_be_indexed_by_the_time_set():
     def scalar_cost(m):
         return m.cost[0] == m.z[0] ** 2
 
-    with pytest.raises(ValueError, match="indexed by the declared time set"):
+    with pytest.raises(ValueError, match="one member per sample"):
         drto.declare_tracking_stage_cost(m.scalar_cost)
 
 
@@ -233,10 +231,8 @@ def test_stage_cost_must_be_an_equality():
     m = base_model()
     drto.declare_time(m.t)
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])
     def bound(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip
         return m.cost[t] >= 0
 
     with pytest.raises(ValueError, match="equality"):
@@ -247,10 +243,8 @@ def test_stage_cost_needs_a_cost_variable_side():
     m = base_model()
     drto.declare_time(m.t)
 
-    @m.Constraint(m.t)
+    @m.Constraint(sorted(m.t)[:-1])
     def no_var(m, t):
-        if t == m.t.last():
-            return pyo.Constraint.Skip
         return m.z[t] ** 2 == m.u[t] ** 2
 
     with pytest.raises(ValueError, match="cost variable"):
@@ -265,7 +259,7 @@ def test_stage_cost_must_skip_the_final_time():
     def full_span(m, t):
         return m.cost[t] == m.z[t] ** 2
 
-    with pytest.raises(ValueError, match="final time"):
+    with pytest.raises(ValueError, match="one member per sample"):
         drto.declare_tracking_stage_cost(m.full_span)
 
 
