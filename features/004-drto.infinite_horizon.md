@@ -9,9 +9,6 @@ terminal segment to my declared dynamic model, so that a short-horizon dynamic
 optimization inherits infinite-horizon stability without my constructing a
 terminal cost or terminal region by hand.
 
-The usual path is through the mode transform, with the segment as its
-terminal strategy:
-
 ```python
 import pyomo.environ as pyo
 import drto
@@ -28,20 +25,17 @@ drto.declare_tracking_stage_cost(m.stage_con)
 pyo.TransformationFactory("dae.collocation").apply_to(
     m, wrt=m.t, nfe=5, ncp=3, scheme="LAGRANGE-RADAU")
 
-pyo.TransformationFactory("drto.dynamic_optimization").apply_to(
-    m, terminal="infinite_horizon")
+pyo.TransformationFactory("drto.infinite_horizon").apply_to(
+    m, nfe=3, ncp=5, beta=1.2)  # gamma defaults to the mesh rule
 
+drto.build_objective(m)
 pyo.SolverFactory("ipopt").solve(m)
 ```
 
-Applied on its own, the segment options are explicit and the objective is
-assembled afterward:
-
-```python
-pyo.TransformationFactory("drto.infinite_horizon").apply_to(
-    m, nfe=3, ncp=5, beta=1.2)  # gamma defaults to the mesh rule
-drto.build_objective(m)
-```
+The tail terms it registers are live cost terms, so `drto.build_objective`
+picks them up wherever it runs: called directly as above, or as the final
+step of `drto.dynamic_optimization`. Applying this transform before the mode
+transform is the whole composition. There is no coupling option.
 
 ## Benefit hypothesis
 
@@ -104,10 +98,13 @@ move.
   horizon's element spacing. An explicit `gamma` option overrides the rule.
 - `beta` is an option with default 1.2 and must satisfy `beta >= 1`, which
   the stability argument requires.
-- The transform records what it added in `drto.info` (feature 001), and
-  `drto.dynamic_optimization` (feature 006) composes it through an option as
-  its terminal strategy. It also works applied on its own, through both
-  `apply_to` (in place) and `create_using` (a transformed clone).
+- The transform records what it added in `drto.info` (feature 001). There is
+  no coupling option on the mode transforms: the tail terms it registers are
+  live cost terms, so `drto.build_objective` includes them wherever it runs,
+  directly or as the final step of `drto.dynamic_optimization` (feature 006).
+  Applying this transform before the mode transform is the composition.
+- It works through both `apply_to` (in place) and `create_using` (a
+  transformed clone).
 - Acceptance tests mirror the reference notebook: the short-horizon-plus-
   segment solution reproduces a long-horizon baseline, the explicit-weight
   tail equals the quadrature-state tail to machine precision, and the
