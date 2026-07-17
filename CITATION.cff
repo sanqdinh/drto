@@ -12,11 +12,12 @@ url: "https://github.com/devin-griff/drto"
 authors:
   - family-names: Griffith
     given-names: Devin
+    orcid: "https://orcid.org/0009-0008-8619-0971"
 keywords:
   - nmpc
   - moving horizon estimation
   - pyomo
   - dynamic optimization
   - receding horizon
-# TODO: add ORCID, the Zenodo DOI, and date-released once the first tagged
-# release is archived.
+# TODO: add the Zenodo DOI and date-released once the first tagged release
+# is archived.
