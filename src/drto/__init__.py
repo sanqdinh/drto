@@ -27,6 +27,7 @@ from drto.objective import build_objective
 
 # importing registers the drto.* transformations
 from drto import infinite_horizon as _infinite_horizon  # noqa: F401
+from drto import parameterize as _parameterize  # noqa: F401
 
 try:
     __version__ = version("drto")

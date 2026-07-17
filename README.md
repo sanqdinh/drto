@@ -70,6 +70,7 @@ transformation.
 | Objective assembly | `drto.build_objective` |
 | Steady-state reduction | `drto.dynamic_to_steady_state` |
 | Infinite-horizon terminal segment | `drto.infinite_horizon` |
+| Control profile application | `drto.parameterize` |
 
 ## Closed-loop frameworks
 

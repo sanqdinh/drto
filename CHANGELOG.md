@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 
+- `drto.parameterize` (feature 017): applies the declared control profiles
+  by delegating to pyomo-cvp's declaration-mode transform, refreshes the
+  registry to the replacement components, and records itself in the
+  transformation log.
+
 - `drto.infinite_horizon` (feature 004): the terminal segment of Dinh et al.
   (2025). Segment copies of the declared states and controls, dilated
   dynamics at interior Gauss-Legendre points, hard equilibrium endpoint, the

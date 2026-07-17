@@ -29,6 +29,7 @@ pyo.TransformationFactory("drto.infinite_horizon").apply_to(
     m, nfe=3, ncp=5, beta=1.2)  # the defaults, shown explicitly;
                                 # gamma defaults to the mesh rule
 
+pyo.TransformationFactory("drto.parameterize").apply_to(m)  # feature 017
 drto.build_objective(m)
 pyo.SolverFactory("ipopt").solve(m)
 ```

@@ -63,3 +63,11 @@ the paper's `(beta/dt)*phi_f`, registered as a cost group that
 before the mode transform is the whole composition. `beta` and `gamma` are
 mutable Params, symbolic in the dynamics and the weights, so both retune
 between solves; `gamma` defaults to the mesh rule and `beta` must exceed 1.
+
+## Applying the profiles: `drto.parameterize`
+
+`declare_control(profile=...)` records a profile; `drto.parameterize` applies
+every pending one by delegating to pyomo-cvp, then repairs the registry so
+the control records point at the live replacement components. The mode
+transforms run it as one of their steps; standalone workflows call it after
+`drto.infinite_horizon` and before `drto.build_objective`.
