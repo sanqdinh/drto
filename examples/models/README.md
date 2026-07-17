@@ -26,6 +26,10 @@ Every model here follows these, and new models should too:
 - **Unbounded cost variables.** The defining equality already fixes each
   cost value, and a `NonNegativeReals` bound puts the optimum exactly on the
   bound wherever the cost vanishes, which drags interior-point solvers.
+- **Declarations tagged in one block at the end.** The drto declarations sit
+  together after the model is built, so the model reads as plain Pyomo first
+  and the declared surface reads in one place. (Tagging works anywhere after
+  a component exists; this is the style these models standardize on.)
 
 | Module | Builder | Model |
 | --- | --- | --- |
