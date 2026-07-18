@@ -222,7 +222,8 @@ def plot_stage_cost(m, t_max=50):
     (whichever side of it is the scalar). Finite values sit at the samples
     minus the final time, where only the terminal cost applies. On the
     tail the replicated stage-cost Expressions carry the values, drawn
-    open at the interior collocation points. Returns the panel axes.
+    open at the interior collocation points. A dotted line marks zero,
+    the tracking cost's settling value. Returns the panel axes.
     """
     reg = drto.info(m)
     cons = reg.components("tracking_stage_cost")
@@ -237,7 +238,7 @@ def plot_stage_cost(m, t_max=50):
     if cost is None:
         raise ValueError("no scalar cost variable side on the stage cost.")
     panels = [(cost, (), cost.local_name)]
-    return _draw(m, panels, {}, slice(None, -1), t_max, boundary_squares=False)
+    return _draw(m, panels, {id(cost): 0}, slice(None, -1), t_max, boundary_squares=False)
 
 
 def plot_controls(m, controls=None, t_max=50):
