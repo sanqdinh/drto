@@ -85,16 +85,16 @@ transformation.
 
 ## Closed-loop frameworks
 
-Separately from the modes come four **closed-loop frameworks**, the dynamic
-optimization and estimation loops in ideal and advanced-step forms. These are
-specced later.
+Separately from the modes come the **closed-loop frameworks**: the dynamic
+optimization loop in ideal, nonideal, and advanced-step forms (drafted as
+features 014-016), and the estimation loops, specced later.
 
-|  | Ideal | Advanced Step |
-| --- | --- | --- |
-| **Optimization** | `NMPC` | `asNMPC` |
-| **Estimation** | `MHE` | `asMHE` |
+|  | Ideal | Nonideal | Advanced Step |
+| --- | --- | --- | --- |
+| **Optimization** | `ideal_nmpc` | `nonideal_nmpc` | `asnmpc` |
+| **Estimation** | `MHE` |  | `asMHE` |
 
-The advanced-step column, `asNMPC` and `asMHE`, is built on
+The advanced-step column, `asnmpc` and `asMHE`, is built on
 `drto.advanced_step_controller`: it solves the horizon at a predicted state and
 then corrects to the actual state with a fast pounce sensitivity update rather
 than a re-solve.
@@ -134,20 +134,21 @@ object types of a dynamic optimization or simulation problem:
 | --- | --- | --- | --- |
 | Time set | Set | `horizon(m.t)` | The moving-horizon dimension. A `pyomo.dae` ContinuousSet, the root handle for the horizon. Dynamics are declared separately, below. |
 | State | Variable | `state(m.z, ...)` | A state variable. In a dynamic model it carries a DerivativeVar, with its dynamics declared separately below. In a steady-state model it need not have one. |
-| Dynamics | Constraint | `dynamics(m.ode_con)` | Equality ODE; its left-hand side is the state's DerivativeVar (dz/dt). |
+| Dynamics | Constraint | `dynamics(m.ode_con)` | Equality ODE; one side is the state's DerivativeVar (dz/dt). |
 | Control | Variable | `control(m.u, ..., profile=...)` | A manipulated input, the decision variable. The `profile` flag sets its parameterization (piecewise-constant, ...) via pyomo-cvp, over the declared time set. |
-| Tracking stage cost | Constraint | `tracking_stage_cost(m.tracking_stage_con)` | Per-time-point equality for the setpoint-tracking running cost; drto sums its left-hand-side cost var over time in the objective. |
-| Economic stage cost | Constraint | `economic_stage_cost(m.economic_stage_con)` | Per-time-point equality for the economic running cost; its single-point steady-state form is the RTO objective. |
-| Tracking terminal cost | Constraint | `tracking_terminal_cost(m.tracking_terminal_con)` | Equality defining the terminal tracking cost; its left-hand-side scalar goes in the objective. |
-| Initial condition | Constraint | `initial_condition(m.init_con)` | Equality anchoring the initial state; left-hand side is the state at t0, right-hand side the feedback. |
+| Tracking stage cost | Constraint | `tracking_stage_cost(m.tracking_stage_con)` | Per-sample equality for the setpoint-tracking running cost; drto sums its cost var over the samples in the objective. |
+| Economic stage cost | Constraint | `economic_stage_cost(m.economic_stage_con)` | Per-sample equality for the economic running cost; its single-point steady-state form is the RTO objective. |
+| Tracking terminal cost | Constraint | `tracking_terminal_cost(m.tracking_terminal_con)` | Equality defining the terminal tracking cost; its scalar cost var goes in the objective. |
+| Initial condition | Constraint | `initial_condition(m.init_con)` | Equality anchoring the initial state; the state at t0 on one side, the feedback Param on the other. |
 | Terminal constraint | Constraint | `terminal_constraint(m.terminal_con)` | Constraint on the states at the final time; the terminal set the final state must lie in. |
 | Steady-state target | Parameter | `steady_state(m.z, m.z_ss)` | The state setpoint the tracking costs drive toward, paired with its state so the steady-state/RTO solve knows which target to populate. |
 | Steady-state control target | Parameter | `steady_state_control(m.u, m.u_ss)` | The control setpoint the tracking costs drive toward, paired with its control the same way. |
 
 Conventions drto enforces on those constraints: the cost and
-initial-condition constraints are equalities whose left-hand side is the
-scalar the declaration is about (the cost term, or the anchored state); a
-stage cost applies at every time point except the final one, where only the
+initial-condition constraints are equalities with the scalar the declaration
+is about (the cost term, or the anchored state) on one side, either
+orientation; a
+stage cost applies at every sample point except the final one, where only the
 terminal cost applies; a
 terminal constraint may reference only states at the final time, which is
 what separates it from a path constraint. The objective is drto's own: it

@@ -67,8 +67,8 @@ single time point, solving f(z,u)=0 and g(z,u)=0 for an equilibrium
   (`declare_profile`); the controls' declaration already lives there.
   pyomo-cvp STAYS a standalone package (independently useful for
   offline dynamic optimization, and a Pyomo upstream candidate); drto
-  depends on it and re-exports the declarations so users get one
-  import surface. Revisit only if the warm shift needs to reach inside
+  depends on it and folds `declare_profile` into `control(profile=...)`
+  so users get one import surface. Revisit only if the warm shift needs to reach inside
   cvp's substitution machinery.
 - pyomo-pounce (pounce >= 0.8.0) for the in-process solve session,
   sensitivity gradients, and the `estimate()` fast update (merged as
@@ -117,27 +117,28 @@ estimation-side surface follows below):
   `dynamics` below (USER
   DECISION 2026-07-14, revising the earlier auto-pickup-from-DerivativeVar
   plan: declaring the dynamics explicitly is uniform across continuous and
-  discrete time and matches the LHS convention). A state carries a
+  discrete time and matches the scalar-side convention). A state carries a
   DerivativeVar only in a dynamic model. A model the user built as
   steady-state has states with no derivative, so `state` does not
   require one (USER DECISION 2026-07-16).
 - `dynamics(m.ode_con)`: tags the equality Constraint of the state
-  dynamics, currently a continuous-time ODE. Its LHS is the DerivativeVar of
+  dynamics, currently a continuous-time ODE. One side is the DerivativeVar of
   a state (dz/dt),
-  read via `con.expr.args[0]`; drto gets the state from the DerivativeVar
+  read from `con.expr` (either orientation); drto gets the state from the DerivativeVar
   (`get_state_var`) and checks it is a declared state and is taken with
   respect to the declared time set (verified against Pyomo 6.10). That check
   is why `state` earns its place even though the dynamics carry the
   DerivativeVar. USER DECISION 2026-07-14. Renamed from
   `continuous_dynamics` (USER DECISION 2026-07-17).
 - The discrete-time dynamics declaration (deferred, see `horizon`) tags the
-  equality Constraint of a difference equation. Its LHS is a state at the
+  equality Constraint of a difference equation. Its defining side is a state
+  at the
   next time point (z[k+1]), read the same way; drto gets the state (a plain
   Var, which distinguishes it from the continuous case) and advances it
   along the declared discrete time set. Same object as the continuous case,
-  a Constraint; only the LHS differs (USER DECISION 2026-07-14). Its name is
+  a Constraint; only that side differs (USER DECISION 2026-07-14). Its name is
   undecided and out of scope for now: it may share `dynamics`, since the
-  LHS tells the cases apart, or take its own name such as `difference`.
+  defining side tells the cases apart, or take its own name such as `difference`.
 - `control(m.u, ..., profile=...)`: tags the manipulated-input
   Vars, the free decision variables. No `wrt` argument: drto uses the
   declared time set, so the control's parameterization is over that set
@@ -147,9 +148,13 @@ estimation-side surface follows below):
   stays the dependency that implements it underneath.
 - `tracking_stage_cost(m.tracking_stage_con)`: tags the equality
   Constraint defining the setpoint-tracking running cost per time point (the
-  ||z - z_ss|| + ||u - u_ss|| regulation penalty). It is indexed over time:
-  the LHS is a scalar cost Var at each time point (L[t]), the RHS is the
-  per-point cost definition, and drto sums L[t] over time in the objective
+  ||z - z_ss|| + ||u - u_ss|| regulation penalty). It is indexed over the
+  sample points minus the final time, one member per sample (for example
+  `@m.Constraint(sorted(m.t)[:-1])`; the terminal cost owns the final time,
+  and a family indexed by the time set itself is rejected, since
+  discretization would expand it off the sample grid): one side is the
+  scalar cost Var per sample (L[t]), the other the per-sample cost
+  definition, and drto sums L[t] over the samples in the objective
   it assembles (USER DECISION 2026-07-14, revising the earlier accumulated
   scalar form; the per-point form is what lets the steady-state reduction
   drop the time index to leave the single-point cost). The tracking targets
@@ -157,8 +162,8 @@ estimation-side surface follows below):
   `steady_state_control` below), populated by the steady-state/RTO
   solve.
 - `economic_stage_cost(m.economic_stage_con)`: tags the equality
-  Constraint defining the economic running cost phi(z, u), same per-point
-  time-indexed form as the tracking stage cost. Its single-point
+  Constraint defining the economic running cost phi(z, u), same per-sample
+  form as the tracking stage cost. Its single-point
   steady-state form is the economic-RTO objective; the tracking stage cost
   is not (that is a deviation penalty, zero at the equilibrium). So one
   declaration serves economic NMPC and RTO both (economic NMPC is post-v1;
@@ -208,12 +213,13 @@ against Pyomo 6.10):
 - The cost and initial-condition constraints must be equalities; an
   inequality is rejected with a clear error (a cost term or anchor written
   as an inequality is a user mistake).
-- Their LHS is the appropriate scalar, read as `con.expr.args[0]`. Pyomo
-  canonicalizes the constraint body to `LHS - RHS` (lower=upper=0), but
-  `con.expr` preserves the as-written relational expression, so the LHS is
-  a stable read and a misplaced scalar (a non-Var LHS) is detectable and
-  rejected. For a cost the scalar is the cost-term Var drto puts in the
-  objective; for the initial condition it is the anchored state at t0.
+- The appropriate scalar is read from `con.expr`, which preserves the
+  as-written relational expression (Pyomo canonicalizes the body to
+  `LHS - RHS`, lower=upper=0). Either orientation of the equality works:
+  the sides are checked in turn, and a constraint where neither side is
+  the scalar is rejected. For a cost the scalar is the cost-term Var drto
+  puts in the objective; for the initial condition it is the anchored
+  state at t0.
 - Cost variables are left UNBOUNDED (USER DECISION 2026-07-17, best
   practice recorded after measurement). The defining equality fixes the
   value, so a `NonNegativeReals` bound adds no information, and it places

@@ -30,9 +30,10 @@ or simulation problem: `horizon`,
 `state`, `dynamics`, `control` (with its
 pyomo-cvp `profile`), the stage and terminal costs, `initial_condition`
 (a state at the first time point equal to a mutable Param, the feedback hook),
-`terminal_constraint`, and the steady-state targets, each a
-`steady_state(m.z, m.z_ss)` pair of a declared state (or control) with its
-setpoint Param. Each declaration
+`terminal_constraint`, and the steady-state targets:
+`steady_state(m.z, m.z_ss)` pairs a declared state with its setpoint Param,
+and `steady_state_control(m.u, m.u_ss)` pairs a declared control the same
+way. Each declaration
 validates its convention and records the component in the registry, where the
 transformations find it.
 

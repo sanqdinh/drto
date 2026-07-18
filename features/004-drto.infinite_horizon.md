@@ -134,7 +134,7 @@ move.
   errors, naming the variable: a silently free variable there is a wrong
   tail the solver exploits.
 - The finite grid's final instant becomes the linking time. Model
-  equations there reference the last move, which pyomo-cvp (0.6.3.1)
+  equations there reference the last move, which pyomo-cvp
   resolves by the constraint's own structure: no convention is declared or
   flipped.
 - A declared tracking terminal cost is deactivated on application: the tail
