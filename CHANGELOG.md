@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `drto.infinite_horizon` now pins the terminal segment endpoint to the
+  declared steady state, the paper's endpoint constraint (Dinh et al. 2025).
+  A new `terminal` option selects `'soft'` (the default: the eq. 36 endpoint
+  relaxed by an L1 penalty of weight `mu`, a new option, default 1000),
+  `'hard'` (eq. 21c, the plain equality `z(tau=1) == z_s`), or `'none'` (no
+  pin). A pin requires a `drto.steady_state` target for every state.
+
+### Changed
+
+- `drto.infinite_horizon` defaults to `terminal='soft'`, so it now imposes
+  the endpoint steady-state constraint by default and requires a
+  `drto.steady_state` target for every state. Pass `terminal='none'` for the
+  previous behavior (no terminal condition; the singular tail cost is the
+  only terminal enforcement).
+
 ## [0.2.0] - 2026-07-18
 
 ### Added
