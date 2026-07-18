@@ -37,6 +37,12 @@ many modes" promise.
 - `TransformationFactory('drto.dynamic_to_steady_state')` requires `horizon`,
   `state`, and `dynamics` on the model, and errors
   clearly if any is missing.
+- It applies to the declared model before discretization and before any
+  drto transformation: an already-discretized horizon, an applied
+  `drto.infinite_horizon`, or applied control profiles error clearly
+  (USER DECISION 2026-07-18). The steady reduction and the dynamic
+  transforms are sibling branches of the same declarations, not a
+  pipeline.
 - It validates that one side of each dynamics constraint is the
   DerivativeVar of a declared state (either orientation of the equality),
   and errors clearly otherwise. Derivative references outside the dynamics
