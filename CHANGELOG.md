@@ -6,22 +6,35 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
-### Added
+## [0.2.1] - 2026-07-18
 
+### Added
+- Two canonical example models with their two-case notebooks: the
+  cart-pole (`examples/models/cart_pole.py`), the unstable-equilibrium
+  example, four states and one force input stabilizing the upright point;
+  and the binary distillation column
+  (`examples/models/binary_column.py`), the mid-size DAE, a faithful
+  translation of the Dinh et al. (2025) 42-tray methanol/n-propanol
+  model keeping the index-reduced energy balance that references dx/dt
+  inside the algebraic equations. Reference data solved from the
+  original model; `initialize.py` gains the binary column helper.
 - `drto.infinite_horizon` now pins the terminal segment endpoint to the
   declared steady state, the paper's endpoint constraint (Dinh et al. 2025).
-  A new `terminal` option selects `'soft'` (the default: the eq. 36 endpoint
-  relaxed by an L1 penalty of weight `mu`, a new option, default 1000),
-  `'hard'` (eq. 21c, the plain equality `z(tau=1) == z_s`), or `'none'` (no
-  pin). A pin requires a `drto.steady_state` target for every state.
+  A new `terminal` option selects `'soft'` (the eq. 36 endpoint relaxed by
+  an L1 penalty of weight `mu`, a new option, default 1000), `'hard'`
+  (eq. 21c, the plain equality `z(tau=1) == z_s`), or `'none'` (no pin).
+  A pin requires a `drto.steady_state` target for every state.
 
 ### Changed
-
+- `drto.infinite_horizon` replicates algebraic equations that reference a
+  declared state's derivative (the index-reduced energy-balance case): the
+  reference maps to the segment derivative with the dilation factor, the
+  same rewrite the dynamics get. Previously such equations were rejected.
+  Models without them produce byte-identical solver input.
 - `drto.infinite_horizon` defaults to `terminal='soft'`, so it now imposes
-  the endpoint steady-state constraint by default and requires a
-  `drto.steady_state` target for every state. Pass `terminal='none'` for the
-  previous behavior (no terminal condition; the singular tail cost is the
-  only terminal enforcement).
+  the endpoint steady-state constraint by default. Pass `terminal='none'`
+  for the previous behavior (no terminal condition; the singular tail cost
+  is the only terminal enforcement).
 
 ## [0.2.0] - 2026-07-18
 
@@ -170,7 +183,8 @@ All notable changes to this project are documented here. The format is based on
   declaration framework and the six modes are recorded in DESIGN.md and the
   README. No functionality yet.
 
-[Unreleased]: https://github.com/devin-griff/drto/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/devin-griff/drto/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/devin-griff/drto/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/devin-griff/drto/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/devin-griff/drto/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/devin-griff/drto/compare/v0.1.0...v0.1.1
