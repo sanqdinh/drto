@@ -16,6 +16,8 @@ per constraint family with a free index over its set), and the ordered log of
 applied transformations with their outcomes.
 """
 import html
+import inspect
+import re
 
 from pyomo.core.expr.template_expr import templatize_constraint
 
@@ -39,8 +41,58 @@ _KIND_LABELS = (
     ("steady_state_control", "steady-state control targets"),
 )
 
-#: Free-index names used when rendering indexed constraints symbolically.
+#: Fallback free-index names, for rules whose own argument names are
+#: unavailable.
 _INDEX_NAMES = ("k", "j", "i", "l")
+
+#: Free-index names for a rule's internal sums.
+_SUM_INDEX_NAMES = ("i", "j", "l", "p", "q")
+
+
+def _rule_index_names(con, count):
+    """The rule function's own index argument names, in model order.
+
+    Returns None when the rule is not a plain function of the model plus
+    ``count`` indices (a lambda from data, a transformed family, an arity
+    mismatch), and the fallback pool takes over.
+    """
+    rule = getattr(con, "rule", None)
+    fcn = getattr(rule, "_fcn", rule)
+    if not callable(fcn):
+        return None
+    try:
+        params = list(inspect.signature(fcn).parameters)
+    except (TypeError, ValueError):
+        return None
+    if len(params) != count + 1:
+        return None
+    return params[1:]
+
+
+def _index_names(con, count):
+    """Free-index names for a family: the rule's own, or the fallback pool."""
+    return _rule_index_names(con, count) or [
+        _INDEX_NAMES[n % len(_INDEX_NAMES)] for n in range(count)
+    ]
+
+
+def _name_sum_indices(s, outer_names):
+    """Rename the template placeholders of a rule's internal sums.
+
+    Templatization numbers every placeholder globally: the constraint's own
+    indices first (renamed by the caller), then one per internal sum, left
+    as ``_2``. Those get names from a pool that skips the names the
+    constraint indices took.
+    """
+    pool = [x for x in _SUM_INDEX_NAMES if x not in outer_names] or list(
+        _SUM_INDEX_NAMES
+    )
+    n_outer = len(outer_names)
+    nums = sorted({int(x) for x in re.findall(r"(?<!\w)_(\d+)", s)}, reverse=True)
+    for num in nums:
+        name = pool[(num - n_outer - 1) % len(pool)]
+        s = re.sub(rf"(?<!\w)_{num}(?!\d)", name, s)
+    return s
 
 
 def info(m):
@@ -179,9 +231,29 @@ class Info:
             ctype = _component_category(records[0]["component"])
             if ctype == "constraint":
                 for r in records:
-                    yield label, _compact_constraint(r["component"])
+                    yield label, _compact_constraint(
+                        r["component"], self._index_set_label(kind, r["component"])
+                    )
             else:
                 yield label, ", ".join(_entry(r, kind) for r in records)
+
+    def _index_set_label(self, kind, con):
+        """A display label for a kind's anonymous index set, or None.
+
+        A stage cost is validated to be indexed over the samples minus the
+        final time, so its nameless list-built set renders as the defining
+        expression, ``sorted(t)[:-1]``. The members are checked against the
+        recorded sample grid rather than assumed.
+        """
+        if kind not in ("tracking_stage_cost", "economic_stage_cost"):
+            return None
+        horizons = self.declarations("horizon")
+        if not horizons:
+            return None
+        samples = horizons[0].get("samples")
+        if samples is None or sorted(con.keys()) != list(samples[:-1]):
+            return None
+        return f"sorted({horizons[0]['component'].name})[:-1]"
 
     def _transformation_lines(self):
         """Yield one rendered line per applied transformation."""
@@ -263,37 +335,74 @@ def _var_status(comp):
     return f"{fixed}/{len(vals)} fixed"
 
 
-def _compact_constraint(con):
+def _compact_constraint(con, index_set_label=None):
     """Render a constraint family as one symbolic equation.
 
-    Indexed constraints render with a free index over their set, for example
-    ``dzdt[k] == - z[k] + u[k]  for k in t``, via Pyomo's constraint
-    templatization. Rules that templatization cannot handle (for example
-    ``Constraint.Skip`` guards) fall back to a representative member with its
-    concrete index replaced by the free index.
+    ``index_set_label`` overrides the displayed set of a single-index
+    family whose set has no name of its own (the stage cost's sample
+    list).
+
+    Indexed constraints render with free indexes over their sets, named
+    from the rule's own arguments, for example
+    ``dzdt[t] == - z[t] + u[t]  for t in t``, via Pyomo's constraint
+    templatization. Scalar constraints templatize too, which folds their
+    internal sums over sets into symbolic ``SUM(...)`` form (the terminal
+    cost of a large model stays readable). Rules that templatization cannot
+    handle (for example ``Constraint.Skip`` guards) fall back to the raw
+    expression for a scalar, or a representative member with its concrete
+    index coordinates replaced by the free index names.
     """
-    if not con.is_indexed():
-        return str(con.expr)
     try:
         tmpl, indices = templatize_constraint(con)
         s = str(tmpl)
-        sets = []
+        names = _index_names(con, len(indices))
         for n in reversed(range(len(indices))):
-            name = _INDEX_NAMES[n % len(_INDEX_NAMES)]
-            s = s.replace(f"_{n + 1}", name)
-        for n, ix in enumerate(indices):
-            name = _INDEX_NAMES[n % len(_INDEX_NAMES)]
-            iset = getattr(ix, "_set", None)
-            sets.append(f"{name} in {iset.name if iset is not None else '?'}")
-        return f"{s}  for {', '.join(sets)}"
+            s = s.replace(f"_{n + 1}", names[n])
+        if index_set_label is not None and len(indices) == 1:
+            sets = [f"{names[0]} in {index_set_label}"]
+        else:
+            # each index of a multi-set constraint reports the whole
+            # anonymous product as its set; when the counts line up,
+            # position n of the product is index n's own set
+            subsets = None
+            if indices:
+                prod = getattr(indices[0], "_set", None)
+                if prod is not None:
+                    cand = list(prod.subsets())
+                    if len(cand) == len(indices):
+                        subsets = cand
+            sets = []
+            for n, ix in enumerate(indices):
+                iset = subsets[n] if subsets is not None else getattr(ix, "_set", None)
+                sets.append(f"{names[n]} in {iset.name if iset is not None else '?'}")
+        s = _name_sum_indices(s, names)
+        return f"{s}  for {', '.join(sets)}" if sets else s
     except Exception:
         # Templatization executes the constraint rule on IndexTemplate
         # objects, so any rule logic (Skip guards comparing indices, dict
         # lookups, math on the index) can raise anything, and which exception
         # varies across Pyomo versions. Every failure means the same thing
-        # here: this family cannot be templatized, show a representative.
+        # here: this family cannot be templatized. Render a member with its
+        # index coordinates replaced by the free index names, one per set.
+        if not con.is_indexed():
+            return str(con.expr)
         idx = next(iter(con.keys()))
         s = str(con[idx].expr)
-        for frm, to in ((f"[{idx}]", "[k]"), (f"[{idx},", "[k,")):
-            s = s.replace(frm, to)
-        return f"{s}  for k in {con.index_set().name} (shown at {idx})"
+        coords = idx if isinstance(idx, tuple) else (idx,)
+        names = _index_names(con, len(coords))
+        s = s.replace(
+            "[" + ",".join(str(v) for v in coords) + "]", "[" + ",".join(names) + "]"
+        )
+        for n, (v, nm) in enumerate(zip(coords, names)):
+            first = "[" if n == 0 else ","
+            last = "]" if n == len(coords) - 1 else ","
+            s = s.replace(f"{first}{v}{last}", f"{first}{nm}{last}")
+        s = s.replace(f"[{coords[-1]}]", f"[{names[-1]}]")
+        if index_set_label is not None and len(coords) == 1:
+            return f"{s}  for {names[0]} in {index_set_label}"
+        subsets = list(con.index_set().subsets())
+        if len(subsets) == len(coords):
+            tail = ", ".join(f"{nm} in {ss.name}" for nm, ss in zip(names, subsets))
+        else:
+            tail = f"{names[0]} in {con.index_set().name}"
+        return f"{s}  for {tail}"

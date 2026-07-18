@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- `drto.info` templatizes scalar constraints too, folding their internal
+  set sums into symbolic `SUM(...)` form: the double column's terminal
+  cost row renders in one line instead of the 246-term expansion. Free
+  indices take the rule's own argument names (`dM1[i,t] ... for i in
+  tray, t in t`, matching the model as written), the internal sum indices
+  get names too, a family whose rule cannot templatize renders its
+  representative member symbolically instead of at a concrete index, and
+  a stage cost's sample-list index renders as its defining expression,
+  `sorted(t)[:-1]`.
+
 ## [0.1.2] - 2026-07-17
 
 ### Changed

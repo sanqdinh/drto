@@ -549,7 +549,7 @@ def test_declarations_render_in_the_registry_view():
     m = declared_model()
     text = repr(drto.info(m))
     assert "controls: u (piecewise_constant, free)" in text
-    assert "dynamics: dzdt[k]" in text
+    assert "dynamics: dzdt[t]" in text
     assert "steady-state targets: z_ss (of z)" in text
 
 

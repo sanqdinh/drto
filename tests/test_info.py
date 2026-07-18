@@ -102,7 +102,7 @@ def test_repr_marks_fixed_variables():
 def test_repr_renders_indexed_constraints_compactly():
     m = declared_model()
     text = repr(drto.info(m))
-    assert "dynamics: dzdt[k]  ==  - z[k] + u[k]  for k in t" in text
+    assert "dynamics: dzdt[t]  ==  - z[t] + u[t]  for t in t" in text
     # the symbolic form, not the per-index expansion
     assert "[2.5]" not in text
 
@@ -119,7 +119,8 @@ def test_repr_falls_back_for_skip_guarded_rules():
     reg = drto.info(m)
     reg.record_declaration("terminal_constraint", m.guarded)
     text = repr(reg)
-    assert "z[k]" in text and "for k in t" in text
+    assert "z[t]" in text and "for t in t" in text
+    assert "shown at" not in text
 
 
 def test_repr_annotates_transformation_outcomes():
@@ -140,6 +141,25 @@ def test_repr_html_contains_the_same_view():
     assert "<table>" in htm
     assert "drto.marker" in htm
     assert "controls" in htm
+
+
+def test_scalar_constraint_folds_its_sums():
+    # a scalar cost summing over a set (the terminal-cost shape) renders
+    # as a symbolic SUM, not the expanded member-by-member expression
+    m = pyo.ConcreteModel()
+    m.tray = pyo.Set(initialize=range(1, 42))
+    m.w = pyo.Var(m.tray)
+    m.term = pyo.Var()
+
+    @m.Constraint()
+    def terminal(mm):
+        return mm.term == sum((mm.w[i] - 0.5) ** 2 for i in mm.tray)
+
+    reg = drto.info(m)
+    reg.record_declaration("tracking_terminal_cost", m.terminal)
+    text = repr(reg)
+    assert "SUM(" in text
+    assert "w[41]" not in text
 
 
 def test_scalar_constraint_renders_directly():
