@@ -414,14 +414,20 @@ class InfiniteHorizonTransformation(Transformation):
             v = seg[comp]
             return v[tuple(o) + (s,)] if o else v[s]
 
+        _emaps = {}
+
         def _emap(t_rep, s):
             """Model members at ``t_rep`` mapped to segment members at
-            ``s``."""
-            mmap = {}
-            for comp in seg:
-                for o in _combos(comp):
-                    mmap[id(_member(comp, o, t_rep))] = _seg_at(comp, o, s)
-            return mmap
+            ``s``, cached: the map depends only on the two time points,
+            never on the member the replication rule is building."""
+            key = (t_rep, s)
+            if key not in _emaps:
+                mmap = {}
+                for comp in seg:
+                    for o in _combos(comp):
+                        mmap[id(_member(comp, o, t_rep))] = _seg_at(comp, o, s)
+                _emaps[key] = mmap
+            return _emaps[key]
 
         # --- dilated dynamics at interior collocation points (eq. 25) ---
         for con in dynamics:
@@ -521,10 +527,11 @@ class InfiniteHorizonTransformation(Transformation):
         b.add_component(cost_var.local_name, seg_cost)
 
         # --- segment control profiles: applied now, so raw unparameterized
-        # copies are never left on the segment ---
-        for u in controls:
+        # copies are never left on the segment; one call, one pass over
+        # the block ---
+        if controls:
             TransformationFactory("cvp.parameterize").apply_to(
-                b, var=seg[u], contset=b.tau, profile=config.profile
+                b, var=[seg[u] for u in controls], contset=b.tau, profile=config.profile
             )
 
         # --- the tail cost: explicit Gauss weights, (beta/dt) * phi_f with
