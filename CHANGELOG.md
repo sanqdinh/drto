@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-17
+
+### Changed
+
+- `drto.infinite_horizon` builds the segment without repeated work: the
+  time-substitution map the replication rules hand to
+  `replace_expressions` is cached by its two time points instead of being
+  rebuilt per constraint member, and the segment control copies go to
+  pyomo-cvp as one list call (one substitution pass) instead of one call
+  per control. The transformed model is unchanged (byte-identical solver
+  input on the double column); the transform drops from 29 to 3 seconds
+  there. The list call requires pyomo-cvp >= 0.7.0.
+
 ## [0.1.1] - 2026-07-17
 
 ### Added
@@ -119,6 +132,8 @@ All notable changes to this project are documented here. The format is based on
   declaration framework and the six modes are recorded in DESIGN.md and the
   README. No functionality yet.
 
-[Unreleased]: https://github.com/devin-griff/drto/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/devin-griff/drto/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/devin-griff/drto/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/devin-griff/drto/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/devin-griff/drto/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/devin-griff/drto/releases/tag/v0.0.0
