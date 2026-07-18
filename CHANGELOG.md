@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-18
+
+### Added
+
+- `plot_stage_cost` in the examples' `plotting.py`: the tracking stage
+  cost panel, finite values at the samples, tail values from the
+  replicated cost Expressions, and a dotted line at zero, the tracking
+  cost's settling value. Every example notebook includes it.
+
 ### Changed
 
 - `drto.info` templatizes scalar constraints too, folding their internal
@@ -144,7 +153,8 @@ All notable changes to this project are documented here. The format is based on
   declaration framework and the six modes are recorded in DESIGN.md and the
   README. No functionality yet.
 
-[Unreleased]: https://github.com/devin-griff/drto/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/devin-griff/drto/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/devin-griff/drto/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/devin-griff/drto/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/devin-griff/drto/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/devin-griff/drto/compare/v0.0.0...v0.1.0
