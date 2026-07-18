@@ -37,6 +37,8 @@ Every model here follows these, and new models should too:
 | `first_order.py` | `first_order(N=10, h=1)` | First-order linear system, the minimal example from the feature 002 spec. |
 | `quad_tank.py` | `quad_tank(N=15, h=10)` | Johansson's quadruple tank (IEEE TCST 2000), nonminimum-phase configuration: four levels, two pumps with crossed splits. |
 | `double_column.py` | `double_column(N=25, h=1)` | Two 41-tray distillation columns in series separating a ternary mixture (the Skogestad Column A lineage), the DAE example: tray compositions and holdups are states, eight flow controls, and the weir flows, vapor compositions, temperatures, and purity aliases ride along as undeclared algebraics. |
+| `cart_pole.py` | `cart_pole(N=10, h=1)` | Inverted pendulum on a cart (the Dinh et al. 2025 pendulum example): four states, one force input, underactuated, and the upright setpoint is an unstable equilibrium, the regime where terminal machinery matters. |
+| `binary_column.py` | `binary_column(N=20, h=60)` | 42-tray methanol/n-propanol column (Diehl 2001, via the Dinh et al. 2025 code), the mid-size DAE: holdups and compositions are states, reflux ratio and reboiler duty the controls, and the index-reduced tray energy balance references dx/dt inside the algebraic equations that define T, Tdot, y, V, L, Mv, and Qc. |
 
 From a notebook in `examples/`:
 
