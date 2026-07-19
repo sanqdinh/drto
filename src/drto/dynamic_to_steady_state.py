@@ -243,6 +243,10 @@ class DynamicToSteadyStateTransformation(Transformation):
                     new = replaced.get(id(record.get(key)))
                     if new is not None:
                         record[key] = new
+        for record in reg.declarations("control"):
+            # a single-point control has no profile: the annotation came
+            # from the dynamic declaration and describes nothing here
+            record.pop("profile", None)
         reg.record_transformation(
             "drto.dynamic_to_steady_state",
             removed=", ".join(removed) if removed else "(nothing to remove)",

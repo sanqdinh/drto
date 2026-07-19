@@ -57,6 +57,9 @@ def test_registry_reflects_the_reduction():
     # the steady-state pairing follows the collapsed state
     (pair,) = reg.declarations("steady_state")
     assert pair["of"] is ss.z
+    # a single-point control has no profile
+    (control,) = reg.declarations("control")
+    assert "profile" not in control
 
 
 @needs_ipopt

@@ -18,7 +18,9 @@ All notable changes to this project are documented here. The format is based on
   algebraic equations collapse to their quasi-static forms. Applies to
   the declared model only, before discretization and before any drto
   transformation: the steady reduction and the dynamic transforms are
-  sibling branches of the same declarations.
+  sibling branches of the same declarations. The refreshed control
+  records drop their profile annotation: a single-point control has no
+  profile.
 - `drto.steady_state_simulation` (feature 008): reduce to steady state,
   fix the declared controls (at supplied values or the values they hold,
   components resolving by name so `create_using` accepts source-model
