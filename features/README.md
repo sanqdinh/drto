@@ -8,6 +8,10 @@ implemented. A feature spec is one Markdown file, numbered in order
 
 Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready](https://img.shields.io/badge/ready-blue) &rarr; ![implemented](https://img.shields.io/badge/implemented-yellowgreen) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen)
 
+`implemented` means the work is merged to main; `shipped` means a tagged
+release carries it. The flip to `shipped` happens in the release commit,
+alongside the CHANGELOG section rename.
+
 | Feature | State |
 | --- | --- |
 | [001 drto.info](001-drto.info.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
