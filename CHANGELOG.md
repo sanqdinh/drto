@@ -19,6 +19,15 @@ All notable changes to this project are documented here. The format is based on
   the declared model only, before discretization and before any drto
   transformation: the steady reduction and the dynamic transforms are
   sibling branches of the same declarations.
+- `drto.steady_state_simulation` (feature 008): reduce to steady state,
+  fix the declared controls (at supplied values or the values they hold,
+  components resolving by name so `create_using` accepts source-model
+  keys), and install the simulation's zero objective: the square
+  fixed-input equilibrium solve. A dynamic model composes the feature 005
+  reduction; a model authored directly as steady-state skips it. With
+  that, `drto.control` on a model with no declared horizon registers
+  without a profile, so a steady-state model declares through the same
+  surface.
 
 ## [0.2.1] - 2026-07-18
 
