@@ -46,6 +46,9 @@ used across the modes.
   003) with the option for a simulation, which installs a constant-zero
   `Objective` and gives an NLP solver a well-posed square problem for the
   fixed-control equilibrium.
+- The declared stage costs (tracking and economic) are dropped from the
+  model and the registry: a simulation carries no cost equations, and the
+  cost variables they defined are left unused (USER DECISION 2026-07-18).
 - Solving the transformed model gives an equilibrium that satisfies the dynamics
   at rest and the model's algebraic relations.
 - It works through both `apply_to` (in place) and `create_using` (a transformed

@@ -64,6 +64,16 @@ def test_create_using_resolves_source_model_controls_by_name():
     assert not m.u[0].fixed  # the source dynamic model is untouched
 
 
+def test_stage_cost_is_dropped():
+    # a simulation carries no cost equations
+    m = declared_model()
+    pyo.TransformationFactory("drto.steady_state_simulation").apply_to(
+        m, controls={m.u: 0.3}
+    )
+    assert m.component("stage") is None
+    assert not drto.info(m).has_declaration("tracking_stage_cost")
+
+
 def test_unknown_control_errors():
     m = declared_model()
     m.w = pyo.Var()

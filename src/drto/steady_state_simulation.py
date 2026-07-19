@@ -7,7 +7,8 @@ objective: the square problem whose solution is the equilibrium under the
 given inputs. A dynamic model (horizon and dynamics declared) first composes
 ``drto.dynamic_to_steady_state`` (feature 005); a model authored directly as
 steady-state skips the reduction. Either way the declared controls are
-fixed, at supplied values or at the values they already hold, and
+fixed, at supplied values or at the values they already hold, the declared
+stage costs leave the model (a simulation carries no cost), and
 ``drto.build_objective`` installs the simulation's constant-zero objective.
 """
 from pyomo.common.config import ConfigDict, ConfigValue
@@ -55,6 +56,19 @@ class SteadyStateSimulationTransformation(Transformation):
         if reg.has_declaration("horizon") and reg.has_declaration("dynamics"):
             TransformationFactory("drto.dynamic_to_steady_state").apply_to(model)
 
+        # a simulation carries no cost: the stage-cost equations leave the
+        # model (the reduction already removed the terminal pieces on the
+        # dynamic path), and their cost variables are left unused
+        dropped = []
+        for kind in ("tracking_stage_cost", "economic_stage_cost"):
+            for record in reg.declarations(kind):
+                comp = record["component"]
+                if comp.parent_block() is not None:
+                    comp.parent_block().del_component(comp)
+                dropped.append(kind.split("_")[0])
+            # same-package registry surgery, matching the reduction's removals
+            reg._declarations.pop(kind, None)
+
         # resolve the requested values against THIS model: create_using
         # hands keys from the source model, and the reduction above replaces
         # the control components, so names are the stable handle
@@ -89,5 +103,10 @@ class SteadyStateSimulationTransformation(Transformation):
         reg.record_transformation(
             "drto.steady_state_simulation",
             controls=", ".join(fixed) if fixed else "(none declared)",
+            **(
+                {"dropped": f"{' and '.join(sorted(set(dropped)))} stage cost"}
+                if dropped
+                else {}
+            ),
         )
         return model
