@@ -27,7 +27,8 @@ All notable changes to this project are documented here. The format is based on
   reduction; a model authored directly as steady-state skips it. With
   that, `drto.control` on a model with no declared horizon registers
   without a profile, so a steady-state model declares through the same
-  surface.
+  surface; and with a horizon declared, a control not indexed by the time
+  set errors at the declaration instead of later inside pyomo-cvp.
 
 ## [0.2.1] - 2026-07-18
 

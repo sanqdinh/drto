@@ -240,6 +240,14 @@ def test_dynamics_wrt_must_be_the_declared_time():
         drto.dynamics(m.pde)
 
 
+def test_control_not_indexed_by_a_declared_time_set_errors():
+    m = base_model()
+    m.w = pyo.Var()  # a scalar mistaken for a control
+    drto.horizon(m.t)
+    with pytest.raises(ValueError, match="not indexed by the declared time set"):
+        drto.control(m.w)
+
+
 def test_control_without_a_horizon_registers_without_a_profile():
     # a steady-state model declares no horizon: the control registers and
     # no cvp profile is declared, since there is no time to parameterize
