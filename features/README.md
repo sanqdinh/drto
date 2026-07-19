@@ -14,7 +14,7 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 | [002 Dynamic optimization and simulation declarations](002-dynamic_optimization_and_simulation_declarations.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [003 drto.build_objective](003-drto.build_objective.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [004 drto.infinite_horizon](004-drto.infinite_horizon.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
-| [005 drto.dynamic_to_steady_state](005-drto.dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [005 drto.dynamic_to_steady_state](005-drto.dynamic_to_steady_state.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [006 drto.dynamic_optimization](006-drto.dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [007 drto.dynamic_simulation](007-drto.dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [008 drto.steady_state_simulation](008-drto.steady_state_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |

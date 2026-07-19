@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `drto.dynamic_to_steady_state` (feature 005): reduces a declared dynamic
+  model to its steady-state form. Time collapses to a single point, every
+  reference to a declared state's derivative is replaced by zero
+  (elimination by substitution, no `dz/dt == 0` rows) and the
+  DerivativeVars are deleted, the initial condition, terminal constraint,
+  and terminal cost leave the model, and a per-sample stage cost becomes
+  the single-point cost `build_objective` assembles. Derivative-carrying
+  algebraic equations collapse to their quasi-static forms. Applies to
+  the declared model only, before discretization and before any drto
+  transformation: the steady reduction and the dynamic transforms are
+  sibling branches of the same declarations.
+
 ## [0.2.1] - 2026-07-18
 
 ### Added
