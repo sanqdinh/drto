@@ -240,10 +240,21 @@ def test_dynamics_wrt_must_be_the_declared_time():
         drto.dynamics(m.pde)
 
 
-def test_control_requires_time_first():
+def test_control_not_indexed_by_a_declared_time_set_errors():
     m = base_model()
-    with pytest.raises(ValueError, match="horizon.*first"):
-        drto.control(m.u)
+    m.w = pyo.Var()  # a scalar mistaken for a control
+    drto.horizon(m.t)
+    with pytest.raises(ValueError, match="not indexed by the declared time set"):
+        drto.control(m.w)
+
+
+def test_control_without_a_horizon_registers_without_a_profile():
+    # a steady-state model declares no horizon: the control registers and
+    # no cvp profile is declared, since there is no time to parameterize
+    m = pyo.ConcreteModel()
+    m.u = pyo.Var(initialize=0.5)
+    drto.control(m.u)
+    assert drto.info(m).components("control") == (m.u,)
 
 
 def test_stage_cost_must_be_indexed_over_the_samples():
@@ -489,9 +500,19 @@ def test_wrapping_takes_exactly_one_component():
 
 
 def test_wrapping_checks_prerequisites_at_attachment():
+    # dynamics needs the state declared; the wrapped constraint checks when
+    # Pyomo attaches it (control no longer serves here: without a horizon it
+    # registers profile-free, the steady-state form)
     m = pyo.ConcreteModel()
-    with pytest.raises(ValueError, match="horizon"):
-        m.u = drto.control(pyo.Var())
+    m.t = ContinuousSet(initialize=pyo.RangeSet(0, 4, 1))
+    m.z = pyo.Var(m.t)
+    m.dzdt = DerivativeVar(m.z, wrt=m.t)
+    drto.horizon(m.t)
+    with pytest.raises(ValueError, match="state first"):
+
+        @drto.dynamics(m, m.t)
+        def ode(m, t):
+            return m.dzdt[t] == -m.z[t]
 
 
 def test_a_set_where_a_component_belongs_is_a_type_error():

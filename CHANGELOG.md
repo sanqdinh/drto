@@ -6,6 +6,48 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `drto.initialize_steady_state` (feature 010): initialize a model from
+  its steady state. A steady-state model (authored, or a feature 005
+  reduction) initializes in place through pyomo-pounce's fill, project,
+  block-solve pipeline with the declared controls as the decisions; a
+  discretized dynamic model reduces a throwaway clone, solves there, and
+  broadcasts the equilibrium flat across the grid with the derivatives at
+  zero, returning a printable report with the broadcast counts. Runs
+  before the dynamic transforms, which carry the values forward. A
+  non-square steady system raises, naming the unmatched variables and
+  constraints. pyomo-pounce is optional: the `pounce` extra
+  (`pip install drto[pounce]`), imported at call time.
+
+- `drto.dynamic_to_steady_state` (feature 005): reduces a declared dynamic
+  model to its steady-state form. Time collapses to a single point, every
+  reference to a declared state's derivative is replaced by zero
+  (elimination by substitution, no `dz/dt == 0` rows) and the
+  DerivativeVars are deleted, the initial condition, terminal constraint,
+  and terminal cost leave the model, and a per-sample stage cost becomes
+  the single-point cost `build_objective` assembles. Derivative-carrying
+  algebraic equations collapse to their quasi-static forms. Applies to
+  the declared or discretized model, before any drto transformation (the
+  steady reduction and the dynamic transforms are sibling branches of the
+  same declarations); on a discretized model the discretization artifacts
+  are discarded, and the reduction gives the same steady system either
+  way. The refreshed control
+  records drop their profile annotation: a single-point control has no
+  profile.
+- `drto.steady_state_simulation` (feature 008): reduce to steady state,
+  fix the declared controls (at supplied values or the values they hold,
+  components resolving by name so `create_using` accepts source-model
+  keys), drop the declared stage costs and the steady-state pairings (a
+  simulation carries no cost equations and nothing reads the pairings;
+  the target Params stay), and install the simulation's zero objective:
+  the square fixed-input equilibrium solve. A dynamic model composes the feature 005
+  reduction; a model authored directly as steady-state skips it. With
+  that, `drto.control` on a model with no declared horizon registers
+  without a profile, so a steady-state model declares through the same
+  surface; and with a horizon declared, a control not indexed by the time
+  set errors at the declaration instead of later inside pyomo-cvp.
+
 ## [0.2.1] - 2026-07-18
 
 ### Added
@@ -26,15 +68,12 @@ All notable changes to this project are documented here. The format is based on
   A pin requires a `drto.steady_state` target for every state.
 
 ### Changed
+
 - `drto.infinite_horizon` replicates algebraic equations that reference a
   declared state's derivative (the index-reduced energy-balance case): the
   reference maps to the segment derivative with the dilation factor, the
   same rewrite the dynamics get. Previously such equations were rejected.
   Models without them produce byte-identical solver input.
-- `drto.infinite_horizon` defaults to `terminal='soft'`, so it now imposes
-  the endpoint steady-state constraint by default. Pass `terminal='none'`
-  for the previous behavior (no terminal condition; the singular tail cost
-  is the only terminal enforcement).
 
 ## [0.2.0] - 2026-07-18
 

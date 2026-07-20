@@ -6,7 +6,11 @@ implemented. A feature spec is one Markdown file, numbered in order
 
 ## Status
 
-Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready](https://img.shields.io/badge/ready-blue) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen)
+Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready](https://img.shields.io/badge/ready-blue) &rarr; ![implemented](https://img.shields.io/badge/implemented-yellowgreen) &rarr; ![shipped](https://img.shields.io/badge/shipped-brightgreen)
+
+`implemented` means the work is merged to main; `shipped` means a tagged
+release carries it. The flip to `shipped` happens in the release commit,
+alongside the CHANGELOG section rename.
 
 | Feature | State |
 | --- | --- |
@@ -14,12 +18,12 @@ Lifecycle: ![draft](https://img.shields.io/badge/draft-lightgrey) &rarr; ![ready
 | [002 Dynamic optimization and simulation declarations](002-dynamic_optimization_and_simulation_declarations.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [003 drto.build_objective](003-drto.build_objective.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
 | [004 drto.infinite_horizon](004-drto.infinite_horizon.md) | ![shipped](https://img.shields.io/badge/shipped-brightgreen) |
-| [005 drto.dynamic_to_steady_state](005-drto.dynamic_to_steady_state.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [005 drto.dynamic_to_steady_state](005-drto.dynamic_to_steady_state.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
 | [006 drto.dynamic_optimization](006-drto.dynamic_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
 | [007 drto.dynamic_simulation](007-drto.dynamic_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [008 drto.steady_state_simulation](008-drto.steady_state_simulation.md) | ![ready](https://img.shields.io/badge/ready-blue) |
+| [008 drto.steady_state_simulation](008-drto.steady_state_simulation.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
 | [009 drto.steady_state_optimization](009-drto.steady_state_optimization.md) | ![ready](https://img.shields.io/badge/ready-blue) |
-| [010 drto.initialize_steady_state](010-drto.initialize_steady_state.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
+| [010 drto.initialize_steady_state](010-drto.initialize_steady_state.md) | ![implemented](https://img.shields.io/badge/implemented-yellowgreen) |
 | [011 drto.cold_start_dynamic](011-drto.cold_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [012 drto.advanced_step_controller](012-drto.advanced_step_controller.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |
 | [013 drto.warm_start_dynamic](013-drto.warm_start_dynamic.md) | ![draft](https://img.shields.io/badge/draft-lightgrey) |

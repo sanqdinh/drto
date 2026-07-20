@@ -23,11 +23,14 @@ from drto.declarations import (
     tracking_terminal_cost,
 )
 from drto.info import Info, info
+from drto.initialize_steady_state import SteadyStateInitReport, initialize_steady_state
 from drto.objective import build_objective
 
 # importing registers the drto.* transformations
+from drto import dynamic_to_steady_state as _dynamic_to_steady_state  # noqa: F401
 from drto import infinite_horizon as _infinite_horizon  # noqa: F401
 from drto import parameterize as _parameterize  # noqa: F401
+from drto import steady_state_simulation as _steady_state_simulation  # noqa: F401
 
 try:
     __version__ = version("drto")
@@ -38,6 +41,8 @@ __all__ = [
     "Info",
     "info",
     "build_objective",
+    "initialize_steady_state",
+    "SteadyStateInitReport",
     "horizon",
     "state",
     "dynamics",

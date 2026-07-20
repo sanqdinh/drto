@@ -402,8 +402,10 @@ def control(*components, profile="piecewise_constant"):
     The ``profile`` (a pyomo-cvp profile) parameterizes the named controls
     over the declared time set; it applies to the controls in this call, so a
     control needing a different parameterization is declared separately.
-    Requires ``horizon`` first and pyomo-cvp installed. Tags attached Vars or
-    wraps one fresh Var.
+    Requires ``horizon`` first when one is declared; on a model with no
+    horizon (a steady-state model) the control registers without a profile,
+    since there is no time to parameterize over. Requires pyomo-cvp
+    installed. Tags attached Vars or wraps one fresh Var.
     """
     fn = "control"
     if not components:
@@ -419,9 +421,22 @@ def control(*components, profile="piecewise_constant"):
 
     def register(comps):
         reg = info(comps[0].model())
-        time = _declared_horizon(reg, fn)
-        _declare_many("control", comps, fn, profile=profile)
-        pyomo_cvp.declare_profile(*comps, wrt=time, profile=profile)
+        # a steady-state model declares no horizon: the control registers
+        # without a profile, since there is no time to parameterize over
+        if reg.has_declaration("horizon"):
+            time = _declared_horizon(reg, fn)
+            for comp in comps:
+                if not any(s is time for s in comp.index_set().subsets()):
+                    raise ValueError(
+                        f"drto: {fn}: '{comp.name}' is not indexed by the "
+                        f"declared time set '{time.name}'. A control is a "
+                        f"decision over time; only a model with no horizon "
+                        f"declares time-free controls."
+                    )
+            _declare_many("control", comps, fn, profile=profile)
+            pyomo_cvp.declare_profile(*comps, wrt=time, profile=profile)
+        else:
+            _declare_many("control", comps, fn, profile=profile)
 
     if _wrap_form(components, fn):
         (comp,) = components

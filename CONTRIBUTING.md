@@ -20,7 +20,8 @@ three** of these land in the same PR:
 1. **Code + test.** The behavior, with a `pytest` that pins it.
 2. **CHANGELOG entry.** A bullet under the `## [Unreleased]` section of
    `CHANGELOG.md`, in the user's terms. At release time the section is renamed
-   to the version and dated.
+   to the version and dated, and every feature sitting at `implemented` whose
+   work the release carries flips to `shipped` in the same commit.
 3. **Docs.** The relevant README, docstring, or example-notebook update, so
    the feature is documented where a user looks.
 
